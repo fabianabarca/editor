@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block main %}
+  <!-- Encabezado de la página -->
+  <h1>Listado de Feed Info</h1>
+
+  <!-- Formulario CSRF Token para protección contra ataques de falsificación de solicitudes entre sitios -->
+  {% csrf_token %}
+
+  <!-- Tabla que muestra la lista de FeedInfo -->
+  <table class="table">
+    <thead>
+      <tr>
+        <!-- Cabeceras de la tabla -->
+        <th>ID</th>
+        <th>Nombre del Editor</th>
+        <th>Fecha de Inicio</th>
+        <th>Fecha de Fin</th>
+        <th>Versión</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Ciclo para iterar sobre cada instancia de FeedInfo en la lista -->
+      {% for feed_info in feed_infos %}
+        <tr>
+          <!-- Datos de cada instancia de FeedInfo -->
+          <td>{{ feed_info.id }}</td>
+          <td>{{ feed_info.publisher_name }}</td>
+          <td>{{ feed_info.start_date }}</td>
+          <td>{{ feed_info.end_date }}</td>
+          <td>{{ feed_info.version }}</td>
+          <td>
+            <!-- Botones para eliminar y editar cada instancia de FeedInfo, enlazados a las respectivas vistas -->
+            <a href="{% url 'delete_feed_info' feed_info.id %}" class="btn btn-danger">Eliminar</a>
+            <a href="{% url 'edit_feed_info' feed_info.id %}" class="btn btn-primary">Editar</a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

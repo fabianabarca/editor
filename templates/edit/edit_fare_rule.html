@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block main %}
+
+<h1>Edición</h1>
+
+<p>Datos GTFS editables por usuarios con los permisos.</p>
+
+<h2>Reglas de Tarifas</h2>
+
+<p>Editar la información a continuación.</p>
+
+<!-- Formulario de edición de Reglas de Tarifas -->
+<form method="POST">
+
+    {% csrf_token %}
+
+    <!-- Campo para editar la zona de origen -->
+    <div class="mb-3">
+        <label for="origin">Zona de Origen:</label>
+        <select name="origin" required>
+            {% for zone in zones %}
+                <option value="{{zone.zone_id}}" {% if zone.zone_id == fare_rule.origin.zone_id %}selected{% endif %}>{{zone.zone_id}}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Campo para editar la zona de destino -->
+    <div class="mb-3">
+        <label for="destination">Zona de Destino:</label>
+        <select name="destination" required>
+            {% for zone in zones %}
+                <option value="{{zone.zone_id}}" {% if zone.zone_id == fare_rule.destination.zone_id %}selected{% endif %}>{{zone.zone_id}}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Campo para editar la tarifa -->
+    <div class="mb-3">
+        <label for="fare">Tarifa:</label>
+        <select name="fare" required>
+            {% for fare in fares %}
+                <option value="{{fare.fare_id}}" {% if fare.fare_id == fare_rule.fare.fare_id %}selected{% endif %}>{{fare.price}}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Campo para editar la ruta -->
+    <div class="mb-3">
+        <label for="route">Ruta:</label>
+        <select name="route" required>
+            {% for route in routes %}
+                <option value="{{route.route_id}}" {% if route.route_id == fare_rule.route.route_id %}selected{% endif %}>{{route.short_name}}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Botón de envío del formulario -->
+    <div class="mb-3">
+        <button type="submit" class="btn btn-primary">Enviar</button>
+    </div>
+    
+</form>
+
+{% endblock %}

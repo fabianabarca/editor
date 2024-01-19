@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block main %}
+
+<h1>Edición</h1>
+
+<p>Datos GTFS editables por usuarios con los permisos.</p>
+
+<h2>Rutas de transportes</h2>
+
+<p>Llenar la información a continuación.</p>
+
+<!-- Formulario de creación de rutas -->
+<form method="POST">
+    {% csrf_token %}
+
+    <!-- Campo para elegir la entidad calendario de la fecha de calendario -->
+    <div class="mb-3">
+        <label for="service">Escoje el calendario de la fecha de calendario</label>
+        <select name="service">
+            {% for calendar in calendars %}
+            <option value="{{calendar.service_id}}">{{calendar.service_id}}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Campo para la fecha -->
+    <div class="mb-3">
+        <label for="date">Fecha:</label>
+        <input type="date" name="date" required>
+    </div>
+
+    <!-- Campo para elegir si el servicio estará disponible o no -->
+    <div class="mb-3">
+        <label for="exception_type">Elija si el servicio va a estar disponible o no:</label>
+        <select name="exception_type" required>
+            <option value="1">Añadir servicio para la fecha especificada</option>
+            <option value="2">Remover servicio para la fecha especificada</option>
+        </select>
+    </div>
+
+    <!-- Campo para el nombre de la fecha o feriado -->
+    <div class="mb-3">
+        <label for="holiday_name">Nombre de la fecha o feriado:</label>
+        <input type="text" name="holiday_name" required>
+    </div>
+
+    <!-- Botón de envío del formulario -->
+    <div class="mb-3">
+        <button type="submit" class="btn btn-primary">Enviar</button>
+    </div>    
+</form>
+
+
+{% endblock %}

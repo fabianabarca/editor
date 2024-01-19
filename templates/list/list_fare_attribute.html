@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block main %}
+  <!-- Encabezado de la página -->
+  <h1>Listado de Fare Attributes</h1>
+
+  <!-- Formulario CSRF Token para protección contra ataques de falsificación de solicitudes entre sitios -->
+  {% csrf_token %}
+
+  <!-- Tabla que muestra la lista de Fare Attributes -->
+  <table class="table">
+    <thead>
+      <tr>
+        <!-- Cabeceras de la tabla -->
+        <th>ID de Tarifa</th>
+        <th>Precio</th>
+        <th>Tipo de Moneda</th>
+        <th>Agencia</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Ciclo para iterar sobre cada Fare Attribute en la lista -->
+      {% for fare_attribute in fare_attributes %}
+        <tr>
+          <!-- Datos de cada Fare Attribute -->
+          <td>{{ fare_attribute.fare_id }}</td>
+          <td>{{ fare_attribute.price }}</td>
+          <td>{{ fare_attribute.currency_type }}</td>
+          <td>{{ fare_attribute.agency.name }}</td>
+          <td>
+            <!-- Botones para eliminar y editar cada Fare Attribute, enlazados a las respectivas vistas -->
+            <a href="{% url 'delete_fare_attribute' fare_attribute.fare_id %}" class="btn btn-danger">Eliminar</a>
+            <a href="{% url 'edit_fare_attribute' fare_attribute.fare_id %}" class="btn btn-primary">Editar</a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

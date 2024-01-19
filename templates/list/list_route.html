@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block main %}
+  <!-- Encabezado de la página -->
+  <h1>Listado de Rutas</h1>
+
+  <!-- Formulario CSRF Token para protección contra ataques de falsificación de solicitudes entre sitios -->
+  {% csrf_token %}
+
+  <!-- Tabla que muestra la lista de rutas -->
+  <table class="table">
+    <thead>
+      <tr>
+        <!-- Cabeceras de la tabla -->
+        <th>ID de Ruta</th>
+        <th>Nombre Corto</th>
+        <th>Nombre Largo</th>
+        <th>Tipo de Ruta</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Ciclo para iterar sobre cada ruta en la lista -->
+      {% for route in routes %}
+        <tr>
+          <!-- Datos de cada ruta -->
+          <td>{{route.route_id}}</td>
+          <td>{{route.short_name}}</td>
+          <td>{{route.long_name}}</td>
+          <td>{{route.get_route_type_display}}</td>
+          <td>
+            <!-- Botones para eliminar y editar cada ruta, enlazados a las respectivas vistas -->
+            <a href="{% url 'delete_route' route.route_id %}" class="btn btn-danger">Eliminar</a>
+            <a href="{% url 'edit_route' route.route_id %}" class="btn btn-primary">Editar</a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

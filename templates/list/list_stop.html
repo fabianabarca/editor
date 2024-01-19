@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block main %}
+  <!-- Encabezado de la página -->
+  <h1>Listado de Paradas</h1>
+
+  <!-- Formulario CSRF Token para protección contra ataques de falsificación de solicitudes entre sitios -->
+  {% csrf_token %}
+
+  <!-- Tabla que muestra la lista de paradas -->
+  <table class="table">
+    <thead>
+      <tr>
+        <!-- Cabeceras de la tabla -->
+        <th>ID de Parada</th>
+        <th>Nombre</th>
+        <th>Descripción</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Ciclo para iterar sobre cada parada en la lista -->
+      {% for stop in stops %}
+        <tr>
+          <!-- Datos de cada parada -->
+          <td>{{stop.stop_id}}</td>
+          <td>{{stop.name}}</td>
+          <td>{{stop.desc}}</td>
+          <td>
+            <!-- Botones para eliminar y editar cada parada, enlazados a las respectivas vistas -->
+            <a href="{% url 'delete_stop' stop.stop_id %}" class="btn btn-danger">Eliminar</a>
+            <a href="{% url 'edit_stop' stop.stop_id %}" class="btn btn-primary">Editar</a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

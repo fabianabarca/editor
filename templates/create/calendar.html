@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block main %}
+
+<h1>Edición</h1>
+
+<p>Datos GTFS editables por usuarios con los permisos.</p>
+
+<h2>Rutas de transportes</h2>
+
+<p>Llenar la información a continuación.</p>
+
+<!-- Formulario de creación de rutas, adicionalmente se llama a la función que verifica que start day sea menos que end day -->
+<form method="POST" onsubmit="return validateDates();">
+    {% csrf_token %}
+
+    <!-- Campo para seleccionar si el servicio está disponible los lunes -->
+    <div class="mb-3">
+        <label for="monday">¿El servicio está disponible los lunes?</label>
+        <select id="monday" name="monday">
+            <option value="1">El servicio sí está disponible los lunes incluidos en este período.</option>
+            <option value="0">El servicio no está disponible los lunes incluidos en este período.</option>
+        </select>
+    </div>
+
+    <!-- Campo para seleccionar si el servicio está disponible los martes -->
+    <div class="mb-3">
+        <label for="tuesday">¿El servicio está disponible los martes?</label>
+        <select id="tuesday" name="tuesday">
+            <option value="1">El servicio sí está disponible los martes incluidos en este período.</option>
+            <option value="0">El servicio no está disponible los martes incluidos en este período.</option>
+        </select>
+    </div>
+
+    <!-- Campo para seleccionar si el servicio está disponible los miércoles -->
+    <div class="mb-3">
+        <label for="wednesday">¿El servicio está disponible los miércoles?</label>
+        <select id="wednesday" name="wednesday">
+            <option value="1">El servicio sí está disponible los miércoles incluidos en este período.</option>
+            <option value="0">El servicio no está disponible los miércoles incluidos en este período.</option>
+        </select>
+    </div>
+
+    <!-- Campo para seleccionar si el servicio está disponible los jueves -->
+    <div class="mb-3">
+        <label for="thursday">¿El servicio está disponible los jueves?</label>
+        <select id="thursday" name="thursday">
+            <option value="1">El servicio sí está disponible los jueves incluidos en este período.</option>
+            <option value="0">El servicio no está disponible los jueves incluidos en este período.</option>
+        </select>
+    </div>
+
+    <!-- Campo para seleccionar si el servicio está disponible los viernes -->
+    <div class="mb-3">
+        <label for="friday">¿El servicio está disponible los viernes?</label>
+        <select id="friday" name="friday">
+            <option value="1">El servicio sí está disponible los viernes incluidos en este período.</option>
+            <option value="0">El servicio no está disponible los viernes incluidos en este período.</option>
+        </select>
+    </div>
+
+    <!-- Campo para seleccionar si el servicio está disponible los sábados -->
+    <div class="mb-3">
+        <label for="saturday">¿El servicio está disponible los sábados?</label>
+        <select id="saturday" name="saturday">
+            <option value="1">El servicio sí está disponible los sábados incluidos en este período.</option>
+            <option value="0">El servicio no está disponible los sábados incluidos en este período.</option>
+        </select>
+    </div>
+
+    <!-- Campo para seleccionar si el servicio está disponible los domingos -->
+    <div class="mb-3">
+        <label for="sunday">¿El servicio está disponible los domingos?</label>
+        <select id="sunday" name="sunday">
+            <option value="1">El servicio sí está disponible los domingos incluidos en este período.</option>
+            <option value="0">El servicio no está disponible los domingos incluidos en este período.</option>
+        </select>
+    </div>
+
+    <!-- Campo para ingresar la fecha de inicio de la vigencia del horario -->
+    <div class="mb-3">
+        <label for="start_date" title="Inicio de la vigencia del horario">Inicio de la vigencia del horario:</label>
+        <input type="date" name="start_date" id="start_date" required>
+      </div>
+  
+      <!-- Campo para ingresar la fecha de fin de la vigencia del horario -->
+      <div class="mb-3">
+        <label for="end_date" title="Fin de la vigencia del horario">Fin de la vigencia del horario:</label>
+        <input type="date" name="end_date" id="end_date" required>
+      </div>
+  
+      <!-- Botón de envío del formulario -->
+      <div class="mb-3">
+        <button type="submit" class="btn btn-primary">Enviar</button>
+      </div> 
+  
+    </form>
+  
+    <!-- Script para validar fechas en el formulario -->
+    <script>
+        // Función para validar las fechas de inicio y fin
+        function validateDates() {
+        // Obtiene el valor de la fecha de inicio del formulario
+        var startDate = document.getElementById('start_date').value;
+        
+        // Obtiene el valor de la fecha de fin del formulario
+        var endDate = document.getElementById('end_date').value;
+    
+        // Compara las fechas
+        if (startDate > endDate) {
+            // Si la fecha de inicio es mayor que la fecha de fin, muestra una alerta
+            alert("La fecha de inicio no puede ser mayor que la fecha de fin.");
+            
+            // Devuelve false para indicar que la validación ha fallado
+            return false;
+        }
+    
+        // Si las fechas son válidas, devuelve true para permitir el envío del formulario
+        return true;
+        }
+  </script>
+
+{% endblock %}
