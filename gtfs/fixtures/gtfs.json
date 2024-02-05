@@ -1,0 +1,69 @@
+[
+    {
+        "model": "gtfs.agency",
+        "pk": "84728345",
+        "fields": {
+            "name": "Caribeños",
+            "url": "http://127.0.0.1:8000/admin/gtfs/agency/add/",
+            "timezone": "asdawer",
+            "lang": "es",
+            "phone": "541874541648",
+            "fare_url": "http://127.0.0.1:8000/admin/gtfs/agency/add/",
+            "email": "asdfasdf@ajsdflasdf.com"
+        }
+    },
+    {
+        "model": "gtfs.agency",
+        "pk": "TSG",
+        "fields": {
+            "name": "Transportes San Gabriel",
+            "url": "http://127.0.0.1:8000/admin/gtfs/agency/add/",
+            "timezone": "America/Costa_Rica",
+            "lang": "es",
+            "phone": "25112647",
+            "fare_url": "http://127.0.0.1:8000/admin/gtfs/agency/add/",
+            "email": "hola@transportessangabriel.com"
+        }
+    },
+    {
+        "model": "gtfs.agency",
+        "pk": "asdfa",
+        "fields": {
+            "name": "La Gran Agencia",
+            "url": "https://hola.com",
+            "timezone": "America/Costa_Rica",
+            "lang": "es",
+            "phone": "1541651",
+            "fare_url": "https://hola.com",
+            "email": "sdfgs@hola.com"
+        }
+    },
+    {
+        "model": "gtfs.route",
+        "pk": "SGAB",
+        "fields": {
+            "agency": "TSG",
+            "short_name": "San Gabriel",
+            "long_name": "San Gabriel por la pista",
+            "desc": "se rgserg sdf serg srdeg",
+            "route_type": 5,
+            "url": "http://127.0.0.1:8000/edicion/ruta/",
+            "color": "e21212",
+            "text_color": "19ae3e"
+        }
+    },
+    {
+        "model": "gtfs.route",
+        "pk": "ACOS",
+        "fields": {
+            "agency": "TSG",
+            "short_name": "Acosta",
+            "long_name": "San Ignacio de Acosta",
+            "desc": "Camino por Tarbaca",
+            "route_type": 5,
+            "url": "http://127.0.0.1:8000/edicion/ruta/acosta",
+            "color": "e21212",
+            "text_color": "19ae3e"
+        }
+    }
+]
