@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block main %}
+
+<h1>Listado de Compañías</h1>
+
+<div class="container mt-5">
+    <div class="row">
+        <!-- Agrega un botón más grande para agregar una compañía en el lado izquierdo -->
+        <div class="col-md-12 mb-4 text-center">
+            <a href="{% url 'create_company' %}" class="btn btn-success btn-lg" role="button">Agregar Compañía</a>
+        </div>
+
+        <!-- Utiliza un bucle for para iterar sobre la lista de compañías -->
+        {% for company in companies %}
+        <div class="col-md-4 mb-4">
+            <a href="{% url 'company_agency' company.company_id %}" style="text-decoration: none; color: inherit;">
+                <div class="card text-white bg-primary">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ company.name }}</h5>
+                    </div>
+                </div>
+            </a>
+        </div>        
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

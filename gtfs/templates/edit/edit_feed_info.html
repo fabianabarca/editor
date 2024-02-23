@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block main %}
+
+  <h1>Edición</h1>
+
+  <p>Datos GTFS editables por usuarios con los permisos.</p>
+
+  <h2>Información del Feed</h2>
+
+  <p>Llenar la información a continuación.</p>
+
+<!-- Formulario de edición de FeedInfo -->
+<form method="POST">
+    {% csrf_token %}
+
+    <!-- Campo de identificador de FeedInfo (readonly) -->
+    <div class="mb-3">
+        <label for="feed_info_id" class="form-label">Identificador de FeedInfo</label>
+        <input type="text" class="form-control" name="feed_info_id" id="feed_info_id" value="{{feed_info.id}}" readonly>
+    </div>
+
+    <!-- Campo para editar el nombre del publicador -->
+    <div class="mb-3">
+        <label for="publisher_name" class="form-label">Nombre del publicador</label>
+        <input type="text" class="form-control" name="publisher_name" id="publisher_name" value="{{feed_info.publisher_name}}" required>
+    </div>
+
+    <!-- Campo para editar la URL del publicador -->
+    <div class="mb-3">
+        <label for="publisher_url" class="form-label">URL del publicador</label>
+        <input type="text" class="form-control" name="publisher_url" id="publisher_url" pattern="https?://.+" value="{{feed_info.publisher_url}}" required>
+    </div>
+
+    <!-- Campo para seleccionar el idioma -->
+    <div class="mb-3">
+        <label for="lang" class="form-label">Idioma</label>
+        <select class="form-select" name="lang" id="lang" required>
+            <option value="{{feed_info.lang}}" selected>{{feed_info.lang}}</option>
+        </select>
+    </div>
+
+    <!-- Campo para editar la fecha de inicio -->
+    <div class="mb-3">
+        <label for="start_date" class="form-label">Fecha de inicio</label>
+        <input type="date" class="form-control" name="start_date" id="start_date" value="{% if feed_info.start_date %}{{ feed_info.start_date|date:'Y-m-d' }}{% endif %}" required>
+    </div>
+
+    <!-- Campo para editar la fecha de fin -->
+    <div class="mb-3">
+        <label for="end_date" class="form-label">Fecha de fin</label>
+        <input type="date" class="form-control" name="end_date" id="end_date" value="{% if feed_info.end_date %}{{ feed_info.end_date|date:'Y-m-d' }}{% endif %}" required>
+    </div>
+
+    <!-- Campo para editar la versión -->
+    <div class="mb-3">
+        <label for="version" class="form-label">Versión</label>
+        <input type="text" class="form-control" name="version" id="version" value="{{feed_info.version}}" required>
+    </div>
+
+    <!-- Campo para editar el correo electrónico de contacto -->
+    <div class="mb-3">
+        <label for="contact_email" class="form-label">Correo electrónico de contacto</label>
+        <input type="email" class="form-control" name="contact_email" id="contact_email" value="{{feed_info.contact_email}}" required>
+    </div>
+
+    <!-- Botón de envío del formulario -->
+    <div class="mb-3">
+        <button type="submit" class="btn btn-primary">Enviar</button>
+    </div>
+</form>
+
+{% endblock %}

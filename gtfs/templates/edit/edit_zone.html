@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block main %}
+
+  <h1>Edición</h1>
+
+  <p>Datos GTFS editables por usuarios con los permisos.</p>
+
+  <h2>Zona de Tarifa</h2>
+  <p>Editar la información a continuación.</p>
+
+  <!-- Formulario de edición de zonas -->
+  <form method="POST">
+      {% csrf_token %}
+
+      <!-- Campo para seleccionar un nuevo identificador de zona -->
+      <div class="mb-3">
+          <label for="new_zone_id" class="form-label">Seleccionar nuevo identificador de zona</label>
+          <select class="form-select" name="new_zone_id" id="new_zone_id">
+              {%for value, label in zone_id_choices%}
+                  <option value="{{value}}">{{label}}</option>
+              {%endfor%}
+          </select>
+      </div>
+
+      <!-- Botón de envío del formulario -->
+      <div class="mb-3">
+          <button type="submit" class="btn btn-primary">Enviar</button>
+      </div>
+  </form>
+
+{% endblock %}

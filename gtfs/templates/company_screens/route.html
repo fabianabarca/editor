@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block main %}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <h1>{{ company.name }}</h1>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <!-- Botones -->
+            <a href="{% url 'delete_company' company.company_id %}" class="btn btn-danger">Eliminar</a>
+            <a href="{% url 'edit_company' company.company_id %}" class="btn btn-warning">Editar</a>
+            <a href="{% url 'list_feed' company.company_id %}" class="btn btn-info">Ver Feeds</a>
+        </div>
+    </div>
+
+    {% block enlaces %}
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <!-- Barra horizontal de enlaces -->
+                <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'company_agency' company.company_id %}">Agencias</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" href="#">Rutas</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'company_stop' company.company_id %}">Paradas</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'company_calendar' company.company_id %}">Calendario</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Mapas de Rutas</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'company_fare_attribute' company.company_id %}">Tarifas</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'company_fare_rule' company.company_id %}">Reglas de Tarifas</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'company_zone' company.company_id %}">Zonas</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Advertencias</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'company_feed_info' company.company_id %}">Feed Info</a>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    {% endblock %}
+
+    <!-- Nuevo botón para agregar rutas -->
+    <div class="row mt-5">
+        <div class="col-md-12">
+            <a href="{% url 'create_route' company.company_id %}" class="btn btn-success">Agregar Ruta</a>
+        </div>
+    </div>
+
+    <!-- Lista de Rutas -->
+    <div class="row mt-5">
+        <div class="col-md-12">
+            <h3>Listado de Rutas</h3>
+            <!-- Formulario CSRF Token para protección contra ataques de falsificación de solicitudes entre sitios -->
+            {% csrf_token %}
+            <!-- Tabla que muestra la lista de rutas -->
+            <table class="table">
+              <thead>
+                <tr>
+                  <!-- Cabeceras de la tabla -->
+                  <th>ID de Ruta</th>
+                  <th>Nombre Corto</th>
+                  <th>Nombre Largo</th>
+                  <th>Tipo de Ruta</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Ciclo para iterar sobre cada ruta en la lista -->
+                {% for route in routes %}
+                  <tr>
+                    <!-- Datos de cada ruta -->
+                    <td>{{route.route_id}}</td>
+                    <td>{{route.short_name}}</td>
+                    <td>{{route.long_name}}</td>
+                    <td>{{route.get_route_type_display}}</td>
+                    <td>
+                      <!-- Botones para eliminar y editar cada ruta, enlazados a las respectivas vistas -->
+                      <a href="{% url 'delete_route' route.id company.company_id %}" class="btn btn-danger">Eliminar</a>
+                      <a href="{% url 'edit_route' route.id company.company_id %}" class="btn btn-primary">Editar</a>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+        </div>
+    </div>
+
+{% endblock %}

@@ -51,8 +51,10 @@ class Agency(models.Model):
     Maps to agency.txt in the GTFS feed.
     """
 
+    id = models.AutoField(primary_key=True)
+    feed_id = models.ForeignKey("Feed", on_delete=models.CASCADE)
+
     agency_id = models.CharField(
-        primary_key=True,
         max_length=127,
         help_text="Identificador único de la agencia de transportes.",
     )
@@ -87,9 +89,10 @@ class Stop(models.Model):
     """A stop or station
     Maps to stops.txt in the GTFS feed.
     """
+    feed_id = models.ForeignKey("Feed", on_delete=models.CASCADE)
+    id = models.CharField(max_length=64, primary_key=True)
 
     stop_id = models.CharField(
-        primary_key=True,
         max_length=255,
         db_index=True,
         help_text="Identificador único de una parada o estación.",
@@ -155,6 +158,9 @@ class Route(models.Model):
     Maps to route.txt in the GTFS feed.
     """
 
+    feed_id = models.ForeignKey("Feed", on_delete=models.CASCADE)
+    id = models.CharField(max_length=64, primary_key=True)
+
     ROUTE_TYPE_CHOICES = (
         (0, "Tranvía o tren ligero"),
         (1, "Subterráneo o metro"),
@@ -167,7 +173,6 @@ class Route(models.Model):
     )
 
     route_id = models.CharField(
-        primary_key=True,
         max_length=64,
         db_index=True,
         help_text="Identificador único de la ruta.",
@@ -214,12 +219,14 @@ class Trip(models.Model):
     This implements trips.txt in the GTFS feed
     """
 
+    feed_id = models.ForeignKey("Feed", on_delete=models.CASCADE)
+    id = models.CharField(max_length=64, primary_key=True)
+
     route = models.ForeignKey("Route", on_delete=models.CASCADE)
     service = models.ForeignKey(
         "Calendar", null=True, blank=True, on_delete=models.SET_NULL
     )
     trip_id = models.CharField(
-        primary_key=True,
         max_length=255,
         db_index=True,
         help_text="Indentificador único de viaje.",
@@ -302,6 +309,9 @@ class StopTime(models.Model):
     This implements stop_times.txt in the GTFS feed
     """
 
+    feed_id = models.ForeignKey("Feed", on_delete=models.CASCADE)
+    id = models.CharField(max_length=64, primary_key=True)
+
     trip = models.ForeignKey("Trip", on_delete=models.CASCADE)
     stop = models.ForeignKey("Stop", on_delete=models.CASCADE)
     arrival_time = models.TimeField(
@@ -372,8 +382,10 @@ class Calendar(models.Model):
     This implements trips.txt in the GTFS feed
     """
 
+    feed_id = models.ForeignKey("Feed", on_delete=models.CASCADE)
+    id = models.CharField(max_length=64, primary_key=True)
+
     service_id = models.CharField(
-        primary_key=True,
         max_length=255,
         db_index=True,
         help_text="Indentificador único de un calendario.",
@@ -498,8 +510,11 @@ class CalendarDate(models.Model):
     This implements calendar_dates.txt in the GTFS feed
     """
 
-    service = models.ForeignKey("Calendar", on_delete=models.CASCADE)
-    date = models.DateField(
+    feed_id = models.ForeignKey("Feed", on_delete=models.CASCADE)
+    id = models.CharField(max_length=64, primary_key=True)
+
+    service = models.ForeignKey("Calendar", on_delete=models.CASCADE,)
+    date = models.DateField( 
         auto_now=False,
         auto_now_add=False,
         default=None,
@@ -527,8 +542,10 @@ class CalendarDate(models.Model):
 class FareAttribute(models.Model):
     """A fare attribute class"""
 
+    feed_id = models.ForeignKey("Feed", on_delete=models.CASCADE)
+    id = models.CharField(max_length=64, primary_key=True)
+
     fare_id = models.CharField(
-        primary_key=True,
         max_length=255,
         db_index=True,
         help_text="Identificador único de la clase de tarifa.",
@@ -555,7 +572,7 @@ class FareAttribute(models.Model):
             (0, "No se permiten transferencias en esta tarifa."),
             (1, "Los pasajeros pueden transferir una vez."),
             (2, "Los pasajeros pueden transferir dos veces."),
-            (None, "Se pueden realizar transferencias ilimitadas."),
+            (3, "Se pueden realizar transferencias ilimitadas."),
         ),
         help_text="¿Se permiten las transferencias?",
     )
@@ -575,6 +592,9 @@ class FareAttribute(models.Model):
 
 class FareRule(models.Model):
     """A Fare Rule class"""
+
+    feed_id = models.ForeignKey("Feed", on_delete=models.CASCADE)
+    id = models.AutoField(primary_key=True)
 
     fare = models.ForeignKey("FareAttribute", on_delete=models.CASCADE)
     route = models.ForeignKey("Route", on_delete=models.CASCADE)
@@ -598,8 +618,10 @@ class Zone(models.Model):
     identifier in the fare_rules and the stops tables.
     """
 
+    feed_id = models.ForeignKey("Feed", on_delete=models.CASCADE)
+    id = models.AutoField(primary_key=True)
+
     zone_id = models.CharField(
-        primary_key=True,
         max_length=63,
         db_index=True,
         help_text="Identificador único de una zona.",
@@ -629,8 +651,10 @@ class GeoShape(models.Model):
     """The path the vehicle takes along the route.
     Implements shapes.txt."""
 
+    feed_id = models.ForeignKey("Feed", on_delete=models.CASCADE)
+    id = models.CharField(max_length=64, primary_key=True)
+
     shape_id = models.CharField(
-        primary_key=True,
         max_length=255,
         db_index=True,
         help_text="Identificador único de una trayectoria.",
@@ -645,6 +669,9 @@ class GeoShape(models.Model):
 class Shape(models.Model):
     """The path the vehicle takes along the route.
     Implements shapes.txt."""
+
+    feed_id = models.ForeignKey("Feed", on_delete=models.CASCADE)
+    id = models.CharField(max_length=64, primary_key=True)
 
     shape_id = models.CharField(
         max_length=255,
@@ -681,6 +708,9 @@ class Shape(models.Model):
 
 class FeedInfo(models.Model):   
     """Información sobre los que hacen el GTFS"""
+
+    feed_id = models.ForeignKey("Feed", on_delete=models.CASCADE)
+    id = models.CharField(max_length=64, primary_key=True)
 
     publisher_name = models.CharField(
         max_length=128, help_text="Quiénes hicieron el GTFS."

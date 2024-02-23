@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block main %}
+
+<h1>Edición</h1>
+
+<p>Datos GTFS editables por usuarios con los permisos.</p>
+
+<h2>Compañías</h2>
+
+<p>Editar la información a continuación.</p>
+
+<!-- Formulario de edición de Compañía -->
+<form method="POST" action="{% url 'edit_company' company.company_id %}" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- Campo de identificador de la compañía (readonly) -->
+    <div class="mb-3">
+        <label for="company_id" class="form-label">Identificador de la compañía</label>
+        <input type="text" class="form-control" name="company_id" id="company_id" value="{{company.company_id}}" readonly>
+    </div>
+
+    <!-- Campo para editar el nombre de la compañía -->
+    <div class="mb-3">
+        <label for="company_name" class="form-label">Nombre de la compañía</label>
+        <input type="text" class="form-control" name="company_name" id="company_name" value="{{company.name}}" required>
+    </div>
+
+    <!-- Campo para editar la dirección de la compañía -->
+    <div class="mb-3">
+        <label for="company_address" class="form-label">Dirección de la compañía</label>
+        <input type="text" class="form-control" name="company_address" id="company_address" value="{{company.address}}" required>
+    </div>
+
+    <!-- Campo para editar el teléfono de la compañía -->
+    <div class="mb-3">
+        <label for="company_phone" class="form-label">Teléfono de la compañía</label>
+        <input type="text" class="form-control" name="company_phone" id="company_phone" value="{{company.phone}}" required>
+    </div>
+
+    <!-- Campo para editar el correo electrónico de la compañía -->
+    <div class="mb-3">
+        <label for="company_email" class="form-label">Correo electrónico de la compañía</label>
+        <input type="email" class="form-control" name="company_email" id="company_email" value="{{company.email}}" required>
+    </div>
+
+    <!-- Campo para editar la dirección web de la compañía -->
+    <div class="mb-3">
+        <label for="company_website" class="form-label">Sitio web de la compañía</label>
+        <input type="text" class="form-control" name="company_website" id="company_website" value="{{company.website}}" required>
+    </div>
+
+    <!-- Campo para cargar el logo de la compañía -->
+    <div class="mb-3">
+        <label for="company_logo" class="form-label">Logo de la compañía</label>
+        <input type="file" class="form-control" name="company_logo" id="company_logo">
+    </div>
+
+    <!-- Botón de envío del formulario -->
+    <div class="mb-3">
+        <button type="submit" class="btn btn-primary">Enviar</button>
+    </div>
+</form>
+
+{% endblock %}

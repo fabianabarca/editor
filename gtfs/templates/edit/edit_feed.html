@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block main %}
+
+  <h1>Edición</h1>
+
+  <p>Datos GTFS editables por usuarios con los permisos.</p>
+
+  <h2>Feeds de GTFS</h2>
+  <p>Llenar la información a continuación.</p>
+
+  <!-- Formulario de edición de Feed -->
+  <form method="POST">
+    {% csrf_token %}
+    
+    <!-- Campo para el identificador del feed (readonly) -->
+    <div class="mb-3">
+      <label for="feed_id" class="form-label">Identificador del feed</label>
+      <input type="text" class="form-control" name="feed_id" id="feed_id" value="{{feed.feed_id}}" readonly>
+    </div>
+
+    <!-- Campo para seleccionar la compañía del feed -->
+    <div class="mb-3">
+      <label for="feed_company">Selecciona la compañía del feed</label>
+      <select name="feed_company">
+        <option value="" {% if not feed.company_id %}selected{% endif %}>Ninguna</option>
+        {% for company in companies %}
+          <option value="{{company.company_id}}" {% if feed.company_id and company == feed.company_id %}selected{% endif %}>{{company.name}}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Campo para subir el archivo ZIP del feed -->
+    <div class="mb-3">
+      <label for="feed_zip_file" class="form-label">Archivo ZIP del feed</label>
+      <input type="file" class="form-control" name="feed_zip_file" id="feed_zip_file" accept=".zip" required>
+    </div>
+
+    <!-- Botón de envío del formulario -->
+    <div class="mb-3">
+      <button type="submit" class="btn btn-primary">Enviar</button>
+    </div>
+  </form>
+
+{% endblock %}

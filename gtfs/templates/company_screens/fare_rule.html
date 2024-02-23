@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block main %}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <h1>{{ company.name }}</h1>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <!-- Botones -->
+            <a href="{% url 'delete_company' company.company_id %}" class="btn btn-danger">Eliminar</a>
+            <a href="{% url 'edit_company' company.company_id %}" class="btn btn-warning">Editar</a>
+            <a href="{% url 'list_feed' company.company_id %}" class="btn btn-info">Ver Feeds</a>
+        </div>
+    </div>
+
+    {% block enlaces %}
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <!-- Barra horizontal de enlaces -->
+                <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'company_agency' company.company_id %}">Agencias</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'company_route' company.company_id %}">Rutas</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'company_stop' company.company_id %}">Paradas</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'company_calendar' company.company_id %}">Calendario</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Mapas de Rutas</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'company_fare_attribute' company.company_id %}">Tarifas</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" href="#">Reglas de Tarifas</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'company_zone' company.company_id %}">Zonas</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Advertencias</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'company_feed_info' company.company_id %}">Feed Info</a>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    {% endblock %}
+
+    <!-- Nuevo botón para agregar reglas de tarifa -->
+    <div class="row mt-5">
+        <div class="col-md-12">
+            <a href="{% url 'create_fare_rule' company.company_id %}" class="btn btn-success">Agregar Regla de Tarifa</a>
+        </div>
+    </div>
+
+    <!-- Lista de Agencias -->
+    <div class="row mt-5">
+        <div class="col-md-12">
+            <h3>Listado de Reglas de Tarifa</h3>
+            {% csrf_token %}
+            <table class="table">
+                <thead>
+                  <tr>
+                    <!-- Cabeceras de la tabla -->
+                    <th>ID de Tarifa</th>
+                    <th>Ruta</th>
+                    <th>Origen</th>
+                    <th>Destino</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Ciclo para iterar sobre cada Fare Rule en la lista -->
+                  {% for fare_rule in fare_rules %}
+                    <tr>
+                      <!-- Datos de cada Fare Rule -->
+                      <td>{{fare_rule.fare.fare_id}}</td>
+                      <td>{{fare_rule.route.route_id}}</td>
+                      <td>{{fare_rule.origin.zone_id}}</td>
+                      <td>{{fare_rule.destination.zone_id}}</td>
+                      <td>
+                        <!-- Botones para eliminar y editar cada Fare Rule, enlazados a las respectivas vistas -->
+                        <a href="{% url 'delete_fare_rule' fare_rule.id company.company_id %}" class="btn btn-danger">Eliminar</a>
+                        <a href="{% url 'edit_fare_rule' fare_rule.id company.company_id %}" class="btn btn-primary">Editar</a>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+        </div>
+    </div>
+
+{% endblock %}
+
+
+

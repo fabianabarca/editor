@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block main %}
+  <h1>Edición</h1>
+
+  <p>Datos GTFS editables por usuarios con los permisos.</p>
+
+  <h2>Atributo de Tarifa</h2>
+
+  <p>Llenar la información a continuación.</p>
+
+  <!-- Formulario de creación del atributo de tarifa -->
+  <form method="POST">
+    {% csrf_token %}
+
+    <!-- Campo para el identificador del Atributo de Tarifa -->
+    <div class="mb-3">
+        <label for="fare_id" class="form-label">Identificador del Atributo de Tarifa</label>
+        <input type="text" class="form-control" name="fare_id" id="fare_id" value="{{fare_attribute.fare_id}}" required>
+    </div>
+
+    <!-- Campo para el precio de la tarifa -->
+    <div class="mb-3">
+        <label for="price" class="form-label">Precio de la tarifa</label>
+        <input type="number" class="form-control" name="price" id="price" required>
+    </div>
+
+    <!-- Campo para el tipo de moneda -->
+    <div class="mb-3">
+        <label for="currency_type" class="form-label">Tipo de moneda</label>
+        <select class="form-select" name="currency_type" id="currency_type" required>
+            <option value="CRC">Colones (CRC)</option>
+            <option value="USD">Dólares (USD)</option>
+        </select>
+    </div>
+
+
+    <!-- Campo para el método de pago -->
+    <div class="mb-3">
+        <label for="payment_method" class="form-label">Método de pago</label>
+        <select class="form-select" name="payment_method" id="payment_method" required>
+            <option value="0">La tarifa se paga abordo.</option>
+            <option value="1">La tarifa se paga previo a subir al transporte.</option>
+        </select>
+    </div>
+
+    <!-- Campo para las transferencias -->
+    <div class="mb-3">
+        <label for="transfers" class="form-label">Transferencias permitidas</label>
+        <select class="form-select" name="transfers" id="transfers">
+            <option value="0">No se permiten transferencias en esta tarifa.</option>
+            <option value="1">Los pasajeros pueden transferir una vez.</option>
+            <option value="2">Los pasajeros pueden transferir dos veces.</option>
+            <option value="3">Se pueden realizar transferencias ilimitadas.</option>
+        </select>
+    </div>
+
+    <!-- Campo para la agencia asociada -->
+    <div class="mb-3">
+        <label for="agency_id" class="form-label">Agencia asociada</label>
+        <select class="form-select" name="agency_id" id="agency_id" required>
+            {% for agency in agencies %}
+                <option value="{{ agency.agency_id }}">{{ agency.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Campo para la duración de la transferencia -->
+    <div class="mb-3">
+        <label for="transfer_duration" class="form-label">Duración de la transferencia (segundos)</label>
+        <input type="number" class="form-control" name="transfer_duration" id="transfer_duration">
+    </div>
+
+    <!-- Botón de envío del formulario -->
+    <div class="mb-3">
+        <button type="submit" class="btn btn-primary">Enviar</button>
+    </div>    
+  </form>
+
+{% endblock %}

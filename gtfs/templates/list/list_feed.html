@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block main %}
+  <!-- Encabezado de la página -->
+  <h1>Listado de Feeds</h1>
+
+  <div class="col-md-12 mb-4 text-center">
+    <a href="{% url 'create_company' %}" class="btn btn-success btn-lg" role="button">Agregar Compañía</a>
+  </div>
+
+  <!-- Formulario CSRF Token para protección contra ataques de falsificación de solicitudes entre sitios -->
+  {% csrf_token %}
+
+  <!-- Tabla que muestra la lista de feeds -->
+  <table class="table">
+    <thead>
+      <tr>
+        <!-- Cabeceras de la tabla -->
+        <th>Feed ID</th>
+        <th>Company ID</th>
+        <th>Created At</th>
+        <th>Is Current</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Ciclo para iterar sobre cada feed en la lista -->
+      {% for feed in feeds %}
+        <tr>
+          <!-- Datos de cada feed -->
+          <td>{{ feed.feed_id }}</td>
+          <td>{{ feed.company_id }}</td>
+          <td>{{ feed.created_at }}</td>
+          <td>{{ feed.is_current }}</td>
+          <td>
+            <!-- Botón "Escoger Feed" con estilo condicional -->
+            <a href="{% url 'select_feed' feed.feed_id company.company_id %}" class="btn {% if feed.is_current %}btn-success{% else %}btn-secondary{% endif %}">Escoger Feed</a>
+            <a href="{% url 'delete_feed' feed.feed_id company.company_id %}" class="btn btn-danger">Eliminar</a>
+            <a href="{% url 'edit_feed' feed.feed_id company.company_id %}" class="btn btn-primary">Editar</a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

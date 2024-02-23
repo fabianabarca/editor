@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block main %}
+
+  <!-- Script de validación para la latitud y longitud -->
+  <script>
+      // Función para validar la latitud
+      function validarLatitud() {
+          var latitud = parseFloat(document.getElementById("stop_lat").value);
+          if (isNaN(latitud) || latitud < -90 || latitud > 90) {
+              alert("Por favor, ingrese una latitud válida (-90 a 90).");
+              document.getElementById("stop_lat").value = "";
+          }
+      }
+
+      // Función para validar la longitud
+      function validarLongitud() {
+          var longitud = parseFloat(document.getElementById("stop_lon").value);
+          if (isNaN(longitud) || longitud < -180 || longitud > 180) {
+              alert("Por favor, ingrese una longitud válida (-180 a 180).");
+              document.getElementById("stop_lon").value = "";
+          }
+      }
+  </script>
+
+  <h1>Edición</h1>
+
+  <p>Datos GTFS editables por usuarios con los permisos.</p>
+
+  <h2>Parada de transporte</h2>
+  <p>Editar la información a continuación.</p>
+
+  <!-- Formulario de edición de paradas -->
+  <form method="POST">
+      {% csrf_token %}
+
+      <!-- Campo para el identificador de la parada (readonly) -->
+      <div class="mb-3">
+          <label for="stop_id" class="form-label">Identificador de la parada</label>
+          <input type="text" class="form-control" name="stop_id" id="stop_id" value="{{stop.stop_id}}" required>
+      </div>
+
+      <!-- Campo para el nombre -->
+      <div class="mb-3">
+          <label for="stop_name" class="form-label">Nombre de la parada</label>
+          <input type="text" class="form-control" name="stop_name" id="stop_name" value="{{stop.name}}" required>
+      </div>
+
+      <!-- Campo para la descripción -->
+      <div class="mb-3">
+          <label for="stop_desc" class="form-label">Descripción de la parada</label>
+          <input type="text" class="form-control" name="stop_desc" id="stop_desc" value="{{stop.desc}}" required>
+      </div>
+
+      <!-- Campo para la latitud de la parada -->
+      <div class="mb-3">
+          <label for="stop_lat" class="form-label">Latitud de la parada</label>
+          <input type="text" class="form-control" name="stop_lat" id="stop_lat" value="{{stop.lat}}" onchange="validarLatitud()" required>
+      </div>
+
+      <!-- Campo para la longitud de la parada -->
+      <div class="mb-3">
+          <label for="stop_lon" class="form-label">Longitud de la parada</label>
+          <input type="text" class="form-control" name="stop_lon" id="stop_lon" value="{{stop.lon}}" onchange="validarLongitud()" required>
+      </div>
+
+    <!-- Campo para seleccionar la zona de la parada -->
+    <div class="mb-3">
+        <label for="stop_zone">Zona de la parada</label>
+        <select name="stop_zone">
+            <option value="" {% if not stop.zone_id %}selected{% endif %}>Ninguna</option>
+            {% for zone in zones %}
+                <option value="{{ zone.zone_id }}" {% if stop.zone_id and zone.zone_id == stop.zone_id %}selected{% endif %}>{{ zone.zone_id }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+
+      <!-- Campo para la dirección web de la parada -->
+      <div class="mb-3">
+          <label for="stop_url" class="form-label">Dirección web de la parada</label>
+          <input type="text" class="form-control" name="stop_url" id="stop_url" pattern="https?://.+" value="{{stop.url}}" required>
+      </div>
+
+      <!-- Campo para el tipo de parada -->
+      <div class="mb-3">
+          <label for="stop_location_type">Selecciona el tipo de parada:</label>
+          <select id="stop_location_type" name="stop_location_type">
+              <option value="0" {% if stop.location_type == "0"%}selected{%endif%}>Parada</option>
+              <option value="1" {% if stop.location_type == "1"%}selected{%endif%}>Estación</option>
+          </select>
+      </div>
+
+      <!-- Campo para la estación asociada -->
+      <div class="mb-3">
+          <label for="stop_parent_station" class="form-label">La estación asociada a la parada:</label>
+          <input type="text" class="form-control" name="stop_parent_station" id="stop_parent_station" value="{{stop.parent_station}}" required>
+      </div>
+
+      <!-- Campo para la accesibilidad en silla de ruedas -->
+      <div class="mb-3">
+          <label for="stop_wheelchair_boarding">¿Es posible subir al transporte en silla de ruedas?</label>
+          <select id="stop_wheelchair_boarding" name="stop_wheelchair_boarding">
+              <option value="0" {% if stop.wheelchair_boarding == "0"%}selected{%endif%}>No hay información.</option>
+              <option value="1" {% if stop.wheelchair_boarding == "1"%}selected{%endif%}>Abordaje parcial de silla de ruedas.</option>
+              <option value="2" {% if stop.wheelchair_boarding == "2"%}selected{%endif%}>Las sillas de ruedas no pueden subir.</option>
+          </select>
+      </div>
+
+      <!-- Botón de envío del formulario -->
+      <div class="mb-3">
+          <button type="submit" class="btn btn-primary">Enviar</button>
+      </div>
+  </form>
+
+{% endblock %}

@@ -1,0 +1,511 @@
+[
+    {
+      "model": "gtfs.company",
+      "pk": "1",
+      "fields": {
+        "name": "Transportes San Gabriel",
+        "address": "https://transportessangabriel.com/",
+        "phone": "0000-9999",
+        "email": "correo@gmail.com",
+        "website": "https://transportessangabriel.com/",
+        "logo": "TransportesSanGabriel.png"
+      }
+    },
+    {
+      "model": "gtfs.feed",
+      "pk": "GTFS_20240221001619",
+      "fields": {
+        "company_id": "1",
+        "zip_file": "",
+        "created_at": "2024-02-21T00:16:19.294Z",
+        "is_current": true,
+        "in_edition": false
+      }
+    },
+    {
+      "model": "gtfs.agency",
+      "pk": 1,
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "agency_id": "Transportes San Gabriel",
+        "name": "Transportes San Gabriel",
+        "url": "https://transportessangabriel.com/",
+        "timezone": "America/Costa_Rica",
+        "lang": "es",
+        "phone": "0000-9999",
+        "fare_url": "https://transportessangabriel.com/",
+        "email": "correo@dominio.com"
+      }
+    },
+    {
+      "model": "gtfs.stop",
+      "pk": "1",
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "stop_id": "1",
+        "name": "Abastecedor Alberto",
+        "desc": "Su ruta es Turrujal",
+        "lat": "9.7974569999999996",
+        "lon": "-84.1692709999999948",
+        "loc": "SRID=4326;POINT (-84.169271 9.797457)",
+        "zone": null,
+        "url": "https://transportessangabriel.com/",
+        "location_type": "0",
+        "parent_station": "No existe",
+        "wheelchair_boarding": "0"
+      }
+    },
+    {
+      "model": "gtfs.stop",
+      "pk": "2",
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "stop_id": "2",
+        "name": "Abastecedor Alberto",
+        "desc": "Su ruta es Turrujal",
+        "lat": "9.7975440000000003",
+        "lon": "-84.1697159999999940",
+        "loc": "SRID=4326;POINT (-84.169716 9.797544)",
+        "zone": null,
+        "url": "https://transportessangabriel.com/",
+        "location_type": "0",
+        "parent_station": "No existe",
+        "wheelchair_boarding": "0"
+      }
+    },
+    {
+      "model": "gtfs.stop",
+      "pk": "3",
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "stop_id": "3",
+        "name": "Acueducto Municipal de Aserrí (El Ranchito)",
+        "desc": "Acosta, Turrujal, San Gabriel",
+        "lat": "9.8544470000000004",
+        "lon": "-84.0969860000000011",
+        "loc": "SRID=4326;POINT (-84.096986 9.854447)",
+        "zone": 14,
+        "url": "https://transportessangabriel.com/",
+        "location_type": "0",
+        "parent_station": "No existe",
+        "wheelchair_boarding": "0"
+      }
+    },
+    {
+      "model": "gtfs.stop",
+      "pk": "4",
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "stop_id": "4",
+        "name": "Acueducto Municipal de Aserrí (El Ranchito)",
+        "desc": "Acosta, Turrujal, San Gabriel",
+        "lat": "9.8547569999999993",
+        "lon": "-84.0968589999999949",
+        "loc": "SRID=4326;POINT (-84.096859 9.854757)",
+        "zone": 14,
+        "url": "https://transportessangabriel.com/",
+        "location_type": "0",
+        "parent_station": "No existe",
+        "wheelchair_boarding": "0"
+      }
+    },
+    {
+      "model": "gtfs.stop",
+      "pk": "5",
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "stop_id": "5",
+        "name": "Antes de Bar La Curvita",
+        "desc": "San Gabriel",
+        "lat": "9.7904239999999998",
+        "lon": "-84.0982130000000012",
+        "loc": "SRID=4326;POINT (-84.098213 9.790424)",
+        "zone": 11,
+        "url": "https://transportessangabriel.com/",
+        "location_type": "0",
+        "parent_station": "No existe",
+        "wheelchair_boarding": "0"
+      }
+    },
+    {
+      "model": "gtfs.route",
+      "pk": "1",
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "route_id": "Acosta - San José (Acosta)",
+        "agency": 1,
+        "short_name": "Acosta",
+        "long_name": "Acosta - San José (Acosta)",
+        "desc": "Esta ruta conecta San Ignacio de Acosta con San José centro, pasando por Vuelta de Jorco, Tarbaca, Aserrí y Desamparados.",
+        "route_type": 3,
+        "url": "https://transportessangabriel.com/rutas/acosta",
+        "color": "000000",
+        "text_color": "000000"
+      }
+    },
+    {
+      "model": "gtfs.route",
+      "pk": "2",
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "route_id": "San Gabriel",
+        "agency": 1,
+        "short_name": "San Gabriel",
+        "long_name": "San Gabriel - San José",
+        "desc": "Esta ruta conecta San Gabriel de Aserrí con San José centro, pasando por La Fila del Rosario, Tarbaca, Aserrí y Desamparados.",
+        "route_type": 3,
+        "url": "https://transportessangabriel.com/rutas/acosta",
+        "color": "000000",
+        "text_color": "000000"
+      }
+    },
+    {
+      "model": "gtfs.route",
+      "pk": "3",
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "route_id": "Turrujal",
+        "agency": 1,
+        "short_name": "Turrujal",
+        "long_name": "Turrujal - San José",
+        "desc": "Esta ruta conecta Turrujal de Acosta con San José centro, pasando por San Ignacio de Acosta, Vuelta de Jorco y Tarbaca de Aserrí, Aserrí centro y Desamparados.",
+        "route_type": 3,
+        "url": "https://transportessangabriel.com/rutas/acosta",
+        "color": "000000",
+        "text_color": "000000"
+      }
+    },
+    {
+      "model": "gtfs.calendar",
+      "pk": "1",
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "service_id": "Entresemana",
+        "monday": "1",
+        "tuesday": "1",
+        "wednesday": "1",
+        "thursday": "1",
+        "friday": "1",
+        "saturday": "0",
+        "sunday": "0",
+        "start_date": "2024-01-01",
+        "end_date": "2030-01-01"
+      }
+    },
+    {
+      "model": "gtfs.calendar",
+      "pk": "2",
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "service_id": "Sábados",
+        "monday": "0",
+        "tuesday": "0",
+        "wednesday": "0",
+        "thursday": "0",
+        "friday": "0",
+        "saturday": "1",
+        "sunday": "0",
+        "start_date": "2024-01-01",
+        "end_date": "2030-01-01"
+      }
+    },
+    {
+      "model": "gtfs.calendar",
+      "pk": "3",
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "service_id": "Domingos",
+        "monday": "0",
+        "tuesday": "0",
+        "wednesday": "0",
+        "thursday": "0",
+        "friday": "0",
+        "saturday": "0",
+        "sunday": "1",
+        "start_date": "2024-01-01",
+        "end_date": "2030-01-01"
+      }
+    },
+    {
+      "model": "gtfs.calendardate",
+      "pk": "1",
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "service": "1",
+        "date": "2024-05-03",
+        "exception_type": "2",
+        "holiday_name": "Día del Trabajador"
+      }
+    },
+    {
+      "model": "gtfs.calendardate",
+      "pk": "2",
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "service": "1",
+        "date": "2024-07-26",
+        "exception_type": "2",
+        "holiday_name": "Anexión de Guanacaste"
+      }
+    },
+    {
+      "model": "gtfs.calendardate",
+      "pk": "3",
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "service": "1",
+        "date": "2024-08-02",
+        "exception_type": "2",
+        "holiday_name": "Día de la Virgen de los Ángeles"
+      }
+    },
+    {
+      "model": "gtfs.calendardate",
+      "pk": "4",
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "service": "1",
+        "date": "2024-09-13",
+        "exception_type": "2",
+        "holiday_name": "Día de la Independencia"
+      }
+    },
+    {
+      "model": "gtfs.calendardate",
+      "pk": "5",
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "service": "2",
+        "date": "2024-12-25",
+        "exception_type": "2",
+        "holiday_name": "Navidad"
+      }
+    },
+    {
+      "model": "gtfs.fareattribute",
+      "pk": "1",
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "fare_id": "SGAB_minima",
+        "price": 510,
+        "currency_type": "CRC",
+        "payment_method": 0,
+        "transfers": 0,
+        "agency": 1,
+        "transfer_duration": 1
+      }
+    },
+    {
+      "model": "gtfs.fareattribute",
+      "pk": "2",
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "fare_id": "SGAB_media",
+        "price": 875,
+        "currency_type": "CRC",
+        "payment_method": 0,
+        "transfers": 0,
+        "agency": 1,
+        "transfer_duration": 1
+      }
+    },
+    {
+      "model": "gtfs.fareattribute",
+      "pk": "3",
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "fare_id": "SGAB_completa",
+        "price": 990,
+        "currency_type": "CRC",
+        "payment_method": 0,
+        "transfers": 0,
+        "agency": 1,
+        "transfer_duration": 1
+      }
+    },
+    {
+      "model": "gtfs.fareattribute",
+      "pk": "4",
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "fare_id": "ACOS_minima",
+        "price": 550,
+        "currency_type": "CRC",
+        "payment_method": 0,
+        "transfers": 0,
+        "agency": 1,
+        "transfer_duration": 1
+      }
+    },
+    {
+      "model": "gtfs.fareattribute",
+      "pk": "5",
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "fare_id": "ACOS_media",
+        "price": 920,
+        "currency_type": "CRC",
+        "payment_method": 0,
+        "transfers": 3,
+        "agency": 1,
+        "transfer_duration": 1
+      }
+    },
+    {
+      "model": "gtfs.farerule",
+      "pk": 1,
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "fare": "1",
+        "route": "2",
+        "origin": 2,
+        "destination": 2
+      }
+    },
+    {
+      "model": "gtfs.farerule",
+      "pk": 2,
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "fare": "1",
+        "route": "2",
+        "origin": 2,
+        "destination": 11
+      }
+    },
+    {
+      "model": "gtfs.farerule",
+      "pk": 3,
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "fare": "1",
+        "route": "2",
+        "origin": 2,
+        "destination": 7
+      }
+    },
+    {
+      "model": "gtfs.farerule",
+      "pk": 4,
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "fare": "1",
+        "route": "2",
+        "origin": 2,
+        "destination": 9
+      }
+    },
+    {
+      "model": "gtfs.farerule",
+      "pk": 5,
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "fare": "2",
+        "route": "2",
+        "origin": 2,
+        "destination": 14
+      }
+    },
+    {
+      "model": "gtfs.zone",
+      "pk": 2,
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "zone_id": "SGAB_A"
+      }
+    },
+    {
+      "model": "gtfs.zone",
+      "pk": 5,
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "zone_id": "ACOS_A"
+      }
+    },
+    {
+      "model": "gtfs.zone",
+      "pk": 6,
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "zone_id": "ACOS_B"
+      }
+    },
+    {
+      "model": "gtfs.zone",
+      "pk": 7,
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "zone_id": "ACOS_C"
+      }
+    },
+    {
+      "model": "gtfs.zone",
+      "pk": 8,
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "zone_id": "ACOS_D"
+      }
+    },
+    {
+      "model": "gtfs.zone",
+      "pk": 9,
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "zone_id": "SGAB_D"
+      }
+    },
+    {
+      "model": "gtfs.zone",
+      "pk": 10,
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "zone_id": "SGAB_C"
+      }
+    },
+    {
+      "model": "gtfs.zone",
+      "pk": 11,
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "zone_id": "SGAB_B"
+      }
+    },
+    {
+      "model": "gtfs.zone",
+      "pk": 13,
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "zone_id": "RUTA_E"
+      }
+    },
+    {
+      "model": "gtfs.zone",
+      "pk": 14,
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "zone_id": "RUTA_F"
+      }
+    },
+    {
+      "model": "gtfs.zone",
+      "pk": 15,
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "zone_id": "RUTA_G"
+      }
+    },
+    {
+      "model": "gtfs.feedinfo",
+      "pk": "2024-02-21 00:16:19.294051+00:00",
+      "fields": {
+        "feed_id": "GTFS_20240221001619",
+        "publisher_name": "Transportes San Gabriel",
+        "publisher_url": "https://transportessangabriel.com/",
+        "lang": "en",
+        "start_date": "2024-02-21",
+        "end_date": "2024-02-21",
+        "version": "1.0",
+        "contact_email": "correo@example.com"
+      }
+    }
+  ]
