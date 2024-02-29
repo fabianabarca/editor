@@ -1,0 +1,14 @@
+site_name: Databús - editor GTFS para Costa Rica
+
+nav:
+  - Inicio: index.md
+  - Flujo: flow.md
+  - Configuración: deployment.md
+
+theme:
+  name: material
+  language: es
+  features:
+    - navigation.expand
+    - navigation.tabs
+    - toc.integrate
