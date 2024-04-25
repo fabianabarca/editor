@@ -27,7 +27,7 @@
       <select name="route_agency">
         <option value="" {% if not route.agency %}selected{% endif %}>Ninguna</option>
         {% for agency in agencies %}
-          <option value="{{agency.agency_id}}" {% if route.agency and agency == route.agency %}selected{% endif %}>{{agency.name}}</option>
+          <option value="{{agency.id}}" {% if route.agency and agency == route.agency %}selected{% endif %}>{{agency.name}}</option>
         {% endfor %}
       </select>
     </div>

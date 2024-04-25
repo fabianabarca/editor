@@ -37,7 +37,7 @@
                                 <a class="nav-link" href="{% url 'company_stop' company.company_id %}">Paradas</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link active" href="#">Calendario</a>
+                                <a class="nav-link active" href="{% url 'company_calendar' company.company_id %}">Calendario</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="#">Mapas de Rutas</a>
@@ -83,7 +83,7 @@
                     <!-- Cabeceras de la tabla -->
                     <th>ID de Calendario</th>
                     <th>Fecha</th>
-                    <th>Tipo de Excepción</th>
+                    <th>Disponiblidad del Servicio para la Fecha</th>
                     <th>Nombre del Feriado</th>
                     <th>Acciones</th>
                   </tr>
@@ -95,7 +95,7 @@
                       <!-- Datos de cada fecha de calendario -->
                       <td>{{calendar_date.service.service_id}}</td>
                       <td>{{calendar_date.date}}</td>
-                      <td>{{calendar_date.get_exception_type_display}}</td>
+                      <td>{{calendar_date.id}}</td>
                       <td>{{calendar_date.holiday_name}}</td>
                       <td>
                         <!-- Botones para eliminar y editar cada fecha de calendario, enlazados a las respectivas vistas -->

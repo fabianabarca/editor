@@ -6,22 +6,33 @@
   <!-- Encabezado de la página -->
   <h1>Listado de Feeds</h1>
 
-  <div class="col-md-12 mb-4 text-center">
-    <a href="{% url 'create_company' %}" class="btn btn-success btn-lg" role="button">Agregar Compañía</a>
-  </div>
-
   <!-- Formulario CSRF Token para protección contra ataques de falsificación de solicitudes entre sitios -->
   {% csrf_token %}
 
+  <!-- Bloque para mostrar mensajes -->
+  {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <br>
+  <!-- Botón de Volver -->
+  <a href="{% url 'company_agency' company.company_id %}" class="btn btn-primary">Volver</a>
+  <br>
+
   <!-- Tabla que muestra la lista de feeds -->
   <table class="table">
+    <br>
     <thead>
       <tr>
         <!-- Cabeceras de la tabla -->
-        <th>Feed ID</th>
-        <th>Company ID</th>
-        <th>Created At</th>
-        <th>Is Current</th>
+        <th>ID del Feed</th>
+        <th>Creado el:</th>
+        <th>Es Actual:</th>
+        <th>Última Acción:</th>
         <th>Acciones</th>
       </tr>
     </thead>
@@ -31,9 +42,9 @@
         <tr>
           <!-- Datos de cada feed -->
           <td>{{ feed.feed_id }}</td>
-          <td>{{ feed.company_id }}</td>
           <td>{{ feed.created_at }}</td>
           <td>{{ feed.is_current }}</td>
+          <td>{{ feed.last_action }}</td>
           <td>
             <!-- Botón "Escoger Feed" con estilo condicional -->
             <a href="{% url 'select_feed' feed.feed_id company.company_id %}" class="btn {% if feed.is_current %}btn-success{% else %}btn-secondary{% endif %}">Escoger Feed</a>

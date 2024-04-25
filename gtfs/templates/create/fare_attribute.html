@@ -62,7 +62,7 @@
         <label for="agency_id" class="form-label">Agencia asociada</label>
         <select class="form-select" name="agency_id" id="agency_id" required>
             {% for agency in agencies %}
-                <option value="{{ agency.agency_id }}">{{ agency.name }}</option>
+                <option value="{{ agency.id }}">{{ agency.name }}</option>
             {% endfor %}
         </select>
     </div>

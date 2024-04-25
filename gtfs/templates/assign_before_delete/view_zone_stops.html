@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block main %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrar Paradas</title>
+</head>
+<body>
+
+  <h1 class="mb-3">Administrar Paradas</h1>
+
+  <!-- Formulario CSRF Token para protección contra ataques de falsificación de solicitudes entre sitios -->
+  {% csrf_token %}
+
+  <!-- Eliminar todas las paradas asociadas a una zona -->
+  <div class="mb-3 mt-3">
+    <form method="POST" action="{% url 'delete_all_stops' zone.id %}">
+      {% csrf_token %}
+      <label>Eliminar todas las paradas asociadas a la zona:</label>
+      <button type="submit" class="btn btn-danger">Eliminar</button>
+    </form>
+  </div>
+
+  <!-- Asignar una nueva zona a todas las paradas -->
+  <div class="mb-3">
+    <form method="POST" action="{% url 'update_all_stops_zone' zone.id %}">
+      {% csrf_token %}
+      <label for="new_zone_id">Asignar una nueva zona a todas las paradas:</label>
+      <select name="new_zone_id" id="new_zone_id">
+        <!-- Opciones para seleccionar la nueva zona -->
+        {% for zone in zones %}
+          <option value="{{ zone.id }}">{{ zone.zone_id }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn btn-primary">Asignar Nueva Zona</button>
+    </form>
+  </div>
+
+  <!-- Botón de "Terminar" -->
+  <div class="mb-3">
+    <form method="POST" action="#">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-success">Terminar</button>
+    </form>
+  </div>
+
+  <!-- Iterar sobre cada parada para asignar nueva zona o eliminar individualmente -->
+  <table class="table">
+    <thead>
+        <tr>
+            <th>ID de Parada</th>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for stop in stops %}
+        <tr>
+            <td>{{stop.stop_id}}</td>
+            <td>{{stop.name}}</td>
+            <td>{{stop.desc}}</td>
+            <td>
+                <form method="POST" action="{% url 'update_stop' zone.id stop.id %}">
+                    {% csrf_token %}
+                    <label for="new_zone_id{{ stop.stop_id }}">Asignar nueva agencia:</label>
+                    <select name="new_zone_id" id="new_zone_id{{ stop.stop_id }}">
+                        <!-- Opciones para seleccionar la nueva zona -->
+                        {% for zone_option in zones %}
+                        <option value="{{ zone_option.id }}">{{ zone_option.zone_id }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-primary">Asignar</button>
+                </form>
+                
+                <form method="POST" action="{% url 'delete_zone_stop' zone.id stop.id %}" class="float-right">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+</body>
+</html>
+
+{% endblock %}

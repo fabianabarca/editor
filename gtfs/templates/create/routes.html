@@ -27,7 +27,7 @@
         <label for="route_agency">Escoje la agencia de la ruta</label>
         <select name="route_agency">
             {% for agency in agencies %}
-            <option value="{{agency.agency_id}}">{{agency.name}}</option>
+            <option value="{{agency.id}}">{{agency.name}}</option>
             {% endfor %}
         </select>
     </div>

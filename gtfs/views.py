@@ -7,7 +7,10 @@ from datetime import datetime
 from django.utils import timezone
 from django.http import JsonResponse
 from django.urls import reverse
-
+from django.http import HttpResponseBadRequest
+import os
+from django.core.files import File
+from django.contrib import messages
 
 # Create your views here.
 
@@ -15,12 +18,288 @@ from django.urls import reverse
 def edition(request):
     return render(request, 'edition.html')
 
-def companies(request):
-    # Recupera la lista de instancias de Company
-    companies = Company.objects.all()
 
-    # Renderiza el template de lista de Company con la lista obtenida
-    return render(request, "list/list_companies.html", {"companies": companies})
+def duplicate_agencies(original_feed, duplicate_feed):
+
+    # Duplicar agencias relacionadas al feed original
+    original_agencies = Agency.objects.filter(feed_id=original_feed.feed_id)
+    for original_agency in original_agencies:
+        Agency.objects.create(
+            feed_id=duplicate_feed,
+            agency_id=original_agency.agency_id,
+            name=original_agency.name,
+            url=original_agency.url,
+            timezone=original_agency.timezone,
+            lang=original_agency.lang,
+            phone=original_agency.phone,
+            fare_url=original_agency.fare_url,
+            email=original_agency.email,
+        )
+
+def duplicate_routes(original_feed, duplicate_feed):
+
+    # Duplicar rutas relacionadas al feed original
+    original_routes = Route.objects.filter(feed_id=original_feed.feed_id)
+    for original_route in original_routes:
+
+        # Obtén la agencia con el mismo agency_id y con un id mayor
+        original_agency = original_route.agency
+        new_agency = Agency.objects.filter(agency_id=original_agency.agency_id).order_by('-id').first()
+
+        # Crea la nueva ruta y asocia la nueva agencia si se encontró, de lo contrario, agencia será None
+        new_route = Route.objects.create(
+            feed_id=duplicate_feed,
+            route_id=original_route.route_id,
+            agency=new_agency,
+            short_name=original_route.short_name,
+            long_name=original_route.long_name,
+            desc=original_route.desc,
+            route_type=original_route.route_type,
+            url=original_route.url,
+            color=original_route.color,
+            text_color=original_route.text_color,
+        )
+        
+        # Verifica si se encontró una nueva agencia
+        if new_agency:
+            new_route.agency = new_agency
+            new_route.save()
+        else:
+            print(f"No se encontró una agencia con id mayor para {original_agency.agency_id}")
+
+def duplicate_stops(original_feed, duplicate_feed):
+
+    # Duplicar paradas relacionadas al feed original
+    original_stops = Stop.objects.filter(feed_id=original_feed.feed_id)
+    for original_stop in original_stops:
+
+        # Obtén la zona con el mismo zone_id y con un id mayor
+        original_zone = original_stop.zone
+        new_zone = Zone.objects.filter(zone_id=original_zone.zone_id).order_by('-id').first()
+
+        new_stop = Stop.objects.create(
+            feed_id=duplicate_feed,
+            stop_id=original_stop.stop_id,
+            name=original_stop.name,
+            desc=original_stop.desc,
+            lat=original_stop.lat,
+            lon=original_stop.lon,
+            loc=original_stop.loc,
+            zone=original_stop.zone,
+            url=original_stop.url,
+            location_type=original_stop.location_type,
+            parent_station=original_stop.parent_station,
+            wheelchair_boarding=original_stop.wheelchair_boarding,
+        )
+
+        # Verifica si se encontró una nueva agencia
+        if new_zone:
+            new_stop.zone = new_zone
+            new_stop.save()
+        else:
+            print(f"No se encontró una agencia con id mayor para {original_zone.zone_id}")
+
+def duplicate_calendars(original_feed, duplicate_feed):
+
+    # Duplicar calendarios relacionados al feed original
+    original_calendars = Calendar.objects.filter(feed_id=original_feed.feed_id)
+    for original_calendar in original_calendars:
+        Calendar.objects.create(
+            feed_id=duplicate_feed,
+            service_id=original_calendar.service_id,
+            monday=original_calendar.monday,
+            tuesday=original_calendar.tuesday,
+            wednesday=original_calendar.wednesday,
+            thursday=original_calendar.thursday,
+            friday=original_calendar.friday,
+            saturday=original_calendar.saturday,
+            sunday=original_calendar.sunday,
+            start_date=original_calendar.start_date,
+            end_date=original_calendar.end_date,
+        )
+
+def duplicate_zones(original_feed, duplicate_feed):
+
+    # Duplicar zonas relacionadas al feed original
+    original_zones = Zone.objects.filter(feed_id=original_feed.feed_id)
+    for original_zone in original_zones:
+        Zone.objects.create(
+            feed_id=duplicate_feed,
+            zone_id=original_zone.zone_id,
+        )
+
+def duplicate_fare_attributes(original_feed, duplicate_feed):
+
+    # Duplicar atributos de tarifa relacionados al feed original
+    original_fare_attributes = FareAttribute.objects.filter(feed_id=original_feed.feed_id)
+    for original_fare_attribute in original_fare_attributes:
+
+        # Obtén la agencia con el mismo agency_id y con un id mayor
+        original_agency = original_fare_attribute.agency
+        new_agency = Agency.objects.filter(agency_id=original_agency.agency_id).order_by('-id').first()
+
+        new_fare_attribute = FareAttribute.objects.create(
+            feed_id=duplicate_feed,
+            agency=new_agency, 
+            fare_id=original_fare_attribute.fare_id,
+            price=original_fare_attribute.price,
+            currency_type=original_fare_attribute.currency_type,
+            payment_method=original_fare_attribute.payment_method,
+            transfers=original_fare_attribute.transfers,
+            transfer_duration=original_fare_attribute.transfer_duration,
+        )
+
+def duplicate_fare_rules(original_feed, duplicate_feed):
+
+    # Duplicar reglas de tarifa relacionadas al feed original
+    original_fare_rules = FareRule.objects.filter(feed_id=original_feed.feed_id)
+    for original_fare_rule in original_fare_rules:
+
+        # Obtiene la tarifa con el mismo fare_id y con un id mayor
+        original_fare_attribute = original_fare_rule.fare
+        new_fare_attribute = FareAttribute.objects.filter(fare_id=original_fare_attribute.fare_id).order_by('-id').first()
+
+        # Obtiene la ruta con el mismo route_id y con un id mayor
+        original_route = original_fare_rule.route
+        new_route = Route.objects.filter(route_id=original_route.route_id).order_by('-id').first()
+
+        # Obtiene el origen con el mismo zone_id y con un id mayor
+        original_origin = original_fare_rule.origin
+        new_origin = Zone.objects.filter(zone_id=original_origin.zone_id).order_by('-id').first()
+
+        # Obtiene el destino con el mismo zone_id y con un id mayor
+        original_destination = original_fare_rule.destination
+        new_destination = Zone.objects.filter(zone_id=original_destination.zone_id).order_by('-id').first()
+
+        FareRule.objects.create(
+            feed_id=duplicate_feed,
+            fare=new_fare_attribute,
+            route=new_route,
+            origin=new_origin,
+            destination=new_destination,
+        )
+
+def duplicate_calendar_dates(original_feed, duplicate_feed):
+
+    # Duplicar fechas del calendario relacionadas al feed original
+    original_calendar_dates = CalendarDate.objects.filter(feed_id=original_feed.feed_id)
+    for original_calendar_date in original_calendar_dates:
+
+        # Obtén el calendario con el mismo service_id y con un id mayor
+        original_calendar = original_calendar_date.service
+        new_calendar = Calendar.objects.filter(service_id=original_calendar.service_id).order_by('-id').first()
+
+        new_calendar_date = CalendarDate.objects.create(
+            feed_id=duplicate_feed,
+            service=original_calendar_date.service,
+            date=original_calendar_date.date,
+            exception_type=original_calendar_date.exception_type,
+            holiday_name=original_calendar_date.holiday_name,
+        )
+
+        # Verifica si se encontró una nueva agencia
+        if new_calendar:
+            new_calendar_date.service = new_calendar
+            new_calendar_date.save()
+        else:
+            print(f"No se encontró una agencia con id mayor para {original_calendar.service_id}")
+
+def duplicate_feed_info(original_feed, duplicate_feed):
+    # Obtener la última versión del feed info para este feed
+    last_feed_info = FeedInfo.objects.filter(feed_id=original_feed).order_by('-version').first()
+    
+    if last_feed_info:
+        # Si hay una versión anterior, incrementarla en 1
+        new_version = str(int(last_feed_info.version) + 1)
+    else:
+        # Si no hay versiones anteriores, establecer la versión inicial en 1
+        new_version = '1'
+
+    # Crear una nueva instancia de FeedInfo
+    new_feed_info = FeedInfo.objects.create(
+        feed_id=duplicate_feed,
+        publisher_name=last_feed_info.publisher_name,
+        publisher_url=last_feed_info.publisher_url,
+        lang=last_feed_info.lang,
+        start_date=last_feed_info.start_date,
+        end_date=last_feed_info.end_date,
+        version=new_version,
+        contact_email=last_feed_info.contact_email
+    )
+
+    new_feed_info.save()    
+
+
+def duplicate_feed(feed_id):
+    # Obtener el feed original
+    original_feed = Feed.objects.get(feed_id=feed_id)
+
+    # Obtiene la fecha y hora actual
+    current_datetime = datetime.now()
+
+    # Crea una cadena de feed_id utilizando el formato: "YYYYMMDDHHMMSS"
+    feed_id = "GTFS_" + current_datetime.strftime("%Y%m%d%H%M%S")
+
+    # Crear un nuevo feed con los mismos atributos (excluyendo la clave principal)
+    duplicate_feed = Feed(
+        feed_id=feed_id,
+        company_id=original_feed.company_id,
+        created_at=timezone.now(),
+        zip_file=original_feed.zip_file,
+        is_current=True,  # Establecer is_current en True para el feed duplicado
+        in_edition=original_feed.in_edition
+    )
+
+    # Guardar el nuevo feed sin comprometerlo en la base de datos
+    duplicate_feed.save_base(raw=True)
+
+    # Copiar el archivo zip a una nueva ubicación
+    original_path = original_feed.zip_file.path
+    new_path = os.path.join("gtfs/feeds/", f"copy_{timezone.now().strftime('%Y%m%d%H%M%S')}.zip")
+
+    with open(original_path, 'rb') as original_file:
+        with open(new_path, 'wb') as new_file:
+            new_file.write(original_file.read())
+
+    # Establecer el nuevo archivo zip para el feed duplicado
+    duplicate_feed.zip_file.name = new_path
+    duplicate_feed.zip_file.save(os.path.basename(new_path), File(open(new_path, 'rb')))
+
+    # Establecer is_current en False para el feed original
+    original_feed.is_current = False
+    original_feed.save()
+
+    # Duplicar agencias
+    duplicate_agencies(original_feed, duplicate_feed)
+
+    #Duplicar paradas
+    duplicate_stops(original_feed, duplicate_feed)
+
+    # Duplicar rutas
+    duplicate_routes(original_feed, duplicate_feed)
+
+    # Duplicar calendarios
+    duplicate_calendars(original_feed, duplicate_feed)
+
+    # Duplicar fechas de calendario
+    duplicate_calendar_dates(original_feed, duplicate_feed)
+
+    # Duplicar zonas
+    duplicate_zones(original_feed, duplicate_feed)
+
+    # Duplicar atributos de tarifa
+    duplicate_fare_attributes(original_feed, duplicate_feed)
+
+    # Duplicar reglas de tarifa
+    duplicate_fare_rules(original_feed, duplicate_feed)
+
+    # # Duplicar el feed info
+    duplicate_feed_info(original_feed, duplicate_feed)
+
+    # Guardar el feed duplicado con la nueva ruta del archivo zip
+    duplicate_feed.save()
+
+    return duplicate_feed
 
 
 # MÉTODOS PARA CREAR 
@@ -28,22 +307,16 @@ def create_agency(request, company_id):
     # Verifica si la solicitud es de tipo POST
     if request.method == "POST":
 
-        # Obtiene la última agencia existente
-        last_agency = Agency.objects.order_by('-id').first()
-
-        # Calcula el nuevo ID para la agencia en base al id de la última agencia 
-        if last_agency:
-            new_agency_id = int(last_agency.id) + 1
-        else:
-            new_agency_id = 1
-
         # Obtener el feed actual para la compañía dada
         current_feed = Feed.objects.get(company_id=company_id, is_current=True)
 
+        # Duplicar el feed actual
+        duplicated_feed = duplicate_feed(current_feed.feed_id)
+
         # Crea una nueva instancia de la agencia con los datos proporcionados en la solicitud
         new_agency = Agency(
-            id=new_agency_id,
-            feed_id=current_feed,
+            # id=new_agency_id,
+            feed_id=duplicated_feed,
             agency_id=request.POST["agency_id"],
             name=request.POST["agency_name"],
             url=request.POST["agency_url"],
@@ -57,6 +330,9 @@ def create_agency(request, company_id):
         # Guarda la nueva agencia en la base de datos
         new_agency.save()
 
+        duplicated_feed.last_action = f"Se agregó la agencia {new_agency.name}"
+        duplicated_feed.save()
+
         # Redirige a la página "edited" después de la creación exitosa
         return redirect(reverse("company_agency", args=[company_id]))
     else:
@@ -66,26 +342,25 @@ def create_agency(request, company_id):
 def create_route(request, company_id):
     # Verifica si la solicitud es de tipo POST
     if request.method == "POST":
-        # Obtiene la última ruta existente
-        last_route = Route.objects.order_by('-id').first()
 
-        # Calcula el nuevo ID para la ruta en base al id de la última ruta
-        if last_route:
-            new_route_id = int(last_route.id) + 1
-        else:
-            new_route_id = 1
-
-        # Obtiene la agencia a la que pertenece la ruta
-        agency = Agency.objects.get(agency_id=request.POST["route_agency"])
-
-        # Obtener el feed actual para la ruta dada
+        # Obtener el feed actual para la compañía dada
         current_feed = Feed.objects.get(company_id=company_id, is_current=True)
+        
+        # Duplicar el feed actual
+        duplicated_feed = duplicate_feed(current_feed.feed_id)
+
+        # Obtiene la agencia a la que pertenece la ruta, si no se proporciona, será nulo
+        agency_id = request.POST.get("route_agency")
+        new_agency = None
+        if agency_id:
+            agency = Agency.objects.get(id=agency_id)
+            new_agency = Agency.objects.filter(agency_id=agency.agency_id).order_by('-id').first()
 
         # Crea una nueva instancia de la ruta con los datos proporcionados en la solicitud
         new_route = Route(
-            id=new_route_id,
-            feed_id=current_feed,
-            agency=agency,
+            # id=new_route_id,
+            feed_id=duplicated_feed,
+            agency=new_agency,
             route_id=request.POST["route_id"],
             short_name=request.POST["route_short_name"],
             long_name=request.POST["route_long_name"],
@@ -99,11 +374,15 @@ def create_route(request, company_id):
         # Guarda la nueva ruta en la base de datos
         new_route.save()
 
+        duplicated_feed.last_action = f"Se agregó la ruta {new_route.short_name}"
+        duplicated_feed.save()
+
         # Redirige a la página "edited" después de la creación exitosa
         return redirect(reverse("company_route", args=[company_id]))
     else:
         # Si la solicitud no es de tipo POST, obtiene datos adicionales y renderiza la página "routes.html"
-        agencies = Agency.objects.all()
+        duplicated_feed = Feed.objects.get(company_id=company_id, is_current=True)
+        agencies = Agency.objects.filter(feed_id=duplicated_feed.feed_id)
         route_type_choices = Route.ROUTE_TYPE_CHOICES
         # Se pasan la lista de agencias y route type choices debido a que se deben escoger en una parte del formulario
         context = {
@@ -115,17 +394,12 @@ def create_route(request, company_id):
 def create_stop(request, company_id):
     # Verifica si la solicitud es de tipo POST
     if request.method == 'POST':
-        # Obtiene la última parada existente
-        last_stop = Stop.objects.order_by('-id').first()
 
-        # Calcula el nuevo ID para la parada en base a al id de la parada pasada
-        if last_stop:
-            new_stop_id = int(last_stop.id) + 1
-        else:
-            new_stop_id = 1
-
-        # Obtener el feed actual para la ruta dada
+        # Obtener el feed actual para la compañía dada
         current_feed = Feed.objects.get(company_id=company_id, is_current=True)
+        
+        # Duplicar el feed actual
+        duplicated_feed = duplicate_feed(current_feed.feed_id)
 
         # Obtiene los datos de la parada desde la solicitud
         stop_id = request.POST.get('stop_id')
@@ -142,17 +416,20 @@ def create_stop(request, company_id):
         # Crea un objeto Point para la ubicación de la parada
         stop_loc = Point(stop_lon, stop_lat)
 
+        zone = Zone.objects.get(id=stop_zone_id)
+        new_zone = Zone.objects.filter(zone_id=zone.zone_id).order_by('-id').first()
+
         # Crea una nueva instancia de la parada con los datos proporcionados
         new_stop = Stop(
-            id=new_stop_id,
-            feed_id=current_feed,
+            # id=new_stop_id,
+            feed_id=duplicated_feed,
             stop_id=stop_id,
             name=stop_name,
             desc=stop_desc,
             lat=stop_lat,
             lon=stop_lon,
             loc=stop_loc,
-            zone=Zone.objects.get(zone_id=stop_zone_id),
+            zone=new_zone,
             url=stop_url,
             location_type=stop_location_type,
             parent_station=stop_parent_station,
@@ -162,11 +439,14 @@ def create_stop(request, company_id):
         # Guarda la nueva parada en la base de datos
         new_stop.save()
 
+        duplicated_feed.last_action = f"Se agregó la parada {new_stop.name}"
+        duplicated_feed.save()
+
         # Redirige a la página "edited" después de la creación exitosa
         return redirect(reverse("company_stop", args=[company_id]))
     else:
-        # Si la solicitud no es de tipo POST, obtiene datos adicionales y renderiza la página "stop.html"
-        zones = Zone.objects.all()
+        duplicated_feed = Feed.objects.get(company_id=company_id, is_current=True)
+        zones = Zone.objects.filter(feed_id=duplicated_feed.feed_id)
         # Se pasa por contexto zone porque se necesita para una parte del formulario
         context = {
             "zones": zones,
@@ -177,18 +457,25 @@ def create_zone(request, company_id):
     # Verifica si la solicitud es de tipo POST
     if request.method == "POST":
 
-        # Obtener el feed actual para la ruta dada
+        # Obtener el feed actual para la compañía dada
         current_feed = Feed.objects.get(company_id=company_id, is_current=True)
+        
+        # Duplicar el feed actual
+        duplicated_feed = duplicate_feed(current_feed.feed_id)
 
         # Obtiene la opción seleccionada del formulario
         selected_zone_id = request.POST["zone_id"]
 
         # Si la opción no ha sido seleccionada anteriormente, crea y guarda la nueva zona
         new_zone = Zone(
-            feed_id=current_feed,   
+            # id=new_zone_id,
+            feed_id=duplicated_feed,   
             zone_id=selected_zone_id,
         )
         new_zone.save()
+
+        duplicated_feed.last_action = f"Se agregó la zona {new_zone.zone_id}"
+        duplicated_feed.save()
 
         # Redirige a la página "edited" después de la creación exitosa
         return redirect(reverse("company_zone", args=[company_id]))
@@ -207,22 +494,17 @@ def create_zone(request, company_id):
 def create_calendar(request, company_id):
     # Verifica si la solicitud es de tipo POST
     if request.method == "POST":
-        # Obtiene la última entrada de calendario
-        last_calendar = Calendar.objects.order_by('-id').first()
 
-        # Calcula el nuevo ID para el calendario en base a al id del último calendario
-        if last_calendar:
-            new_calendar_id = int(last_calendar.id) + 1
-        else:
-            new_calendar_id = 1
-
-        # Obtener el feed actual para la ruta dada
+        # Obtener el feed actual para la compañía dada
         current_feed = Feed.objects.get(company_id=company_id, is_current=True)
+        
+        # Duplicar el feed actual
+        duplicated_feed = duplicate_feed(current_feed.feed_id)
 
         # Crea una nueva instancia de Calendar con los datos proporcionados en la solicitud
         new_calendar = Calendar(
-            id=new_calendar_id,
-            feed_id=current_feed,
+            # id=new_calendar_id,
+            feed_id=duplicated_feed,
             service_id=request.POST.get("service_id"),
             monday=request.POST.get("monday"),
             tuesday=request.POST.get("tuesday"),
@@ -238,6 +520,9 @@ def create_calendar(request, company_id):
         # Guarda el nuevo calendario en la base de datos
         new_calendar.save()
 
+        duplicated_feed.last_action = f"Se agregó el calendario {new_calendar.service_id}"
+        duplicated_feed.save()
+
         # Redirige a la página "edited" después de la creación exitosa
         return redirect(reverse("company_calendar", args=[company_id]))
     else:
@@ -247,148 +532,147 @@ def create_calendar(request, company_id):
 def create_calendar_date(request, id, company_id):
     # Verifica si la solicitud es de tipo POST
     if request.method == "POST":
+
+        # Obtener el feed actual para la compañía dada
+        current_feed = Feed.objects.get(company_id=company_id, is_current=True)
+        
+        # Duplicar el feed actual
+        duplicated_feed = duplicate_feed(current_feed.feed_id)
+
+        # Obtener la fecha ingresada en el formulario y convertirla a objeto datetime.date
+        new_calendar_date_date_str = request.POST.get("date")
+        new_calendar_date_date = datetime.strptime(new_calendar_date_date_str, '%Y-%m-%d').date()
+
         # Obtiene el calendario correspondiente a través de una llave foránea proporcionada en la solicitud
         calendar = Calendar.objects.get(id=id)
+        new_calendar = Calendar.objects.filter(service_id=calendar.service_id).order_by('-id').first()
 
-        # Obtiene la última entrada de calendario
-        last_calendar = CalendarDate.objects.order_by('-id').first()
-
-        # Calcula el nuevo ID para el calendario en base a al id del último calendario
-        if last_calendar:
-            new_calendar_id = int(last_calendar.id) + 1
-        else:
-            new_calendar_id = 1
-
-        # Obtener el feed actual para la ruta dada
-        current_feed = Feed.objects.get(company_id=company_id, is_current=True)
+        # Verificar que la fecha esté dentro del rango permitido por el Calendar
+        if not (calendar.start_date <= new_calendar_date_date <= calendar.end_date):
+            return HttpResponseBadRequest("La fecha está fuera del rango permitido por el calendario.")
 
         # Crea una nueva instancia de CalendarDate con los datos proporcionados en la solicitud
         new_calendar_date = CalendarDate(
-            service=calendar,
-            id=new_calendar_id,
-            feed_id=current_feed,
-            date=request.POST.get("date"),
+            service=new_calendar,
+            # id=new_calendar_id,
+            feed_id=duplicated_feed,
+            date=new_calendar_date_date,
             exception_type=request.POST.get("exception_type"),
             holiday_name=request.POST.get("holiday_name"),
         )
 
         # Guarda la nueva fecha del calendario en la base de datos
         new_calendar_date.save()
+        new_calendar = Calendar.objects.filter(service_id=calendar.service_id).order_by('-id').first()
+
+        duplicated_feed.last_action = f"Se agregó la fecha de calendario {new_calendar_date.holiday_name}"
+        duplicated_feed.save()
 
         # Redirige a la página "edited" después de la creación exitosa
-        return redirect(reverse("company_calendar_date", args=[calendar.id, company_id]))
+        return redirect(reverse("company_calendar_date", args=[new_calendar.id, company_id]))
     else:
-        return render(request, "create/calendar_date.html")
+        # Obtén el calendario correspondiente para mostrar en el contexto
+        calendar = Calendar.objects.get(id=id)
+        context = {
+            'calendar': calendar,
+        }   
+        return render(request, "create/calendar_date.html", context)
 
 def create_fare_attribute(request, company_id):
     # Verifica si la solicitud es de tipo POST
     if request.method == "POST":
         
-        # Obtiene la última tarifa existente
-        last_fare = FareAttribute.objects.order_by('-id').first()
-
-        # Calcula el nuevo ID para la tarifa en base al id de la última tarifa 
-        if last_fare:
-            new_fare_id = int(last_fare.id) + 1
-        else:
-            new_fare_id = 1
-
-        # Obtiene la agencia asociada a la tarifa
-        agency_id = request.POST["agency_id"]
-        agency = Agency.objects.get(agency_id=agency_id)
-
-        # Obtener el feed actual para la ruta dada
+        # Obtener el feed actual para la compañía dada
         current_feed = Feed.objects.get(company_id=company_id, is_current=True)
+        
+        # Duplicar el feed actual
+        duplicated_feed = duplicate_feed(current_feed.feed_id)
+
+        # Obtiene la agencia a la que pertenece la ruta, si no se proporciona, será nulo
+        agency_id = request.POST.get("agency_id")
+        new_agency = None
+        if agency_id:
+            agency = Agency.objects.get(id=agency_id)
+            new_agency = Agency.objects.filter(agency_id=agency.agency_id).order_by('-id').first()
 
         # Crea una nueva instancia de la tarifa con los datos proporcionados en la solicitud
         new_fare = FareAttribute(
-            id=new_fare_id,
-            feed_id = current_feed,
+            # id=new_fare_id,
+            feed_id = duplicated_feed,
             fare_id=request.POST["fare_id"],
             price=request.POST["price"],
             currency_type=request.POST["currency_type"],
             payment_method=request.POST["payment_method"],
             transfers=request.POST.get("transfers"),
-            agency=agency,
+            agency=new_agency,
             transfer_duration=request.POST.get("transfer_duration"),
         )
 
         # Guarda la nueva tarifa en la base de datos
         new_fare.save()
 
+        duplicated_feed.last_action = f"Se agregó la tarifa {new_fare.fare_id}"
+        duplicated_feed.save()
+
         # Redirige a la página "edited" después de la creación exitosa
         return redirect(reverse("company_fare_attribute", args=[company_id]))
     else:
         # Si la solicitud no es de tipo POST, obtiene las agencias disponibles y renderiza la página "fare_attribute.html"
-        agencies = Agency.objects.all()
+        duplicated_feed = Feed.objects.get(company_id=company_id, is_current=True)
+        agencies = Agency.objects.filter(feed_id=duplicated_feed.feed_id)
         context = {'agencies': agencies}
-        return render(request, "create/fare_attribute.html", context)
-
-def create_feed_info(request):
-    # Verifica si la solicitud es de tipo POST
-    if request.method == "POST":
-        # Obtiene la última instancia de FeedInfo existente
-        last_feed_info = FeedInfo.objects.order_by('-id').first()
-
-        # Calcula el nuevo ID para FeedInfo en base al id de la última instancia
-        if last_feed_info:
-            new_feed_info_id = last_feed_info.id + 1
-        else:
-            new_feed_info_id = 1
-
-        # Crea una nueva instancia de FeedInfo con los datos proporcionados en la solicitud
-        new_feed_info = FeedInfo(
-            id=new_feed_info_id,
-            publisher_name=request.POST["publisher_name"],
-            publisher_url=request.POST["publisher_url"],
-            lang=request.POST["lang"],
-            start_date=request.POST["start_date"],
-            end_date=request.POST["end_date"],
-            version=request.POST["version"],
-            contact_email=request.POST["contact_email"],
-        )
-
-        # Guarda la nueva instancia de FeedInfo en la base de datos
-        new_feed_info.save()
-
-        # Redirige a la página "edition" después de la creación exitosa
-        return redirect("edition")
-    else:
-        # Si la solicitud no es de tipo POST, renderiza la página de creación con el formulario
-        return render(request, "create/feed_info.html")   
+        return render(request, "create/fare_attribute.html", context)  
 
 def create_fare_rule(request, company_id):
     # Verifica si la solicitud es de tipo POST
     if request.method == "POST":
 
-        # Obtiene las instancias de FareAttribute, Route y Zone correspondientes
-        fare = FareAttribute.objects.get(id=request.POST["fare"])
-        route = Route.objects.get(id=request.POST["route"])
-        origin = Zone.objects.get(id=request.POST["origin"])
-        destination = Zone.objects.get(id=request.POST["destination"])
-
         # Obtener el feed actual para la compañía dada
         current_feed = Feed.objects.get(company_id=company_id, is_current=True)
+        
+        # Duplicar el feed actual
+        duplicated_feed = duplicate_feed(current_feed.feed_id)
+
+        # Obtiene las instancias de FareAttribute, Route y Zone correspondientes
+        fare_id = request.POST.get("fare")
+        fare = FareAttribute.objects.get(id=fare_id)
+        new_fare = FareAttribute.objects.filter(fare_id=fare.fare_id).order_by('-id').first()
+
+        route_id = request.POST.get("route")
+        route = Route.objects.get(id=route_id)
+        new_route = Route.objects.filter(route_id=route.route_id).order_by('-id').first()
+
+        origin_id = request.POST.get("origin")
+        origin = Zone.objects.get(id=origin_id)
+        new_origin = Zone.objects.filter(zone_id=origin.zone_id).order_by('-id').first()
+
+        destination_id = request.POST.get("destination")
+        destination = Zone.objects.get(id=destination_id)
+        new_destination = Zone.objects.filter(zone_id=destination.zone_id).order_by('-id').first()
 
         # Crea una nueva instancia de FareRule con los datos proporcionados en la solicitud
         new_fare_rule = FareRule(
-            feed_id = current_feed,
-            fare=fare,
-            route=route,
-            origin=origin,
-            destination=destination,
+            feed_id = duplicated_feed,
+            fare=new_fare,
+            route=new_route,
+            origin=new_origin,
+            destination=new_destination,
         )
 
         # Guarda la nueva regla de tarifa en la base de datos
         new_fare_rule.save()
 
+        duplicated_feed.last_action = f"Se agregó una regla de tarifa"
+        duplicated_feed.save()
+
         # Redirige a la página "edited" después de la creación exitosa
         return redirect(reverse("company_fare_rule", args=[company_id])) 
     else:
         # Si la solicitud no es de tipo POST, obtiene las instancias existentes necesarias y renderiza la página correspondiente
-        fares = FareAttribute.objects.all()
-        routes = Route.objects.all()
-        zones = Zone.objects.all()
+        duplicated_feed = Feed.objects.get(company_id=company_id, is_current=True)
+        fares = FareAttribute.objects.filter(feed_id=duplicated_feed.feed_id)
+        routes = Route.objects.filter(feed_id=duplicated_feed.feed_id)
+        zones = Zone.objects.filter(feed_id__company_id=company_id, feed_id__is_current=True)
 
         # Se pasa por contexto las instancias necesarias
         context = {
@@ -401,24 +685,15 @@ def create_fare_rule(request, company_id):
 
 def create_company(request):
     if request.method == "POST":
-        # Obtiene la última compañía existente
-        last_company = Company.objects.order_by('-company_id').first()
-
-        # Calcula el nuevo ID para la compañía en base al id de la última compañía 
-        if last_company:
-            new_company_id = int(last_company.company_id) + 1
-        else:
-            new_company_id = 1
 
         # Crea una nueva instancia de la compañía con los datos proporcionados en la solicitud
         new_company = Company(
-            company_id=new_company_id,
             name=request.POST["company_name"],
             address=request.POST["company_address"],
             phone=request.POST["company_phone"],
             email=request.POST["company_email"],
             website=request.POST["company_website"],
-            logo=request.POST["company_logo"],
+            logo=request.FILES["company_logo"],
         )
 
         # Guarda la nueva compañía en la base de datos
@@ -429,10 +704,27 @@ def create_company(request):
         new_feed = Feed(
             feed_id=new_feed_id,
             company_id=new_company,
+            zip_file=request.FILES["gtfs_file"],
+            last_action = "Se creó el feed"
         )
 
         # Guarda el nuevo feed en la base de datos
         new_feed.save()
+
+        # Crea un nuevo FeedInfo
+        new_feed_info = FeedInfo(
+            feed_id=new_feed,
+            start_date=new_feed.created_at.date(),
+            end_date=None,  # Replace with your default value
+            publisher_name="Default Publisher",  # Replace with your default value
+            publisher_url="http://default-publisher-url.com",  # Replace with your default value
+            lang="en",  # Replace with your default value
+            version="1",  # Replace with your default value
+            contact_email="default@example.com"  # Replace with your default value
+        )
+
+        # Guarda el nuevo FeedInfo en la base de datos
+        new_feed_info.save()
 
         # Recupera la lista de instancias de Company
         companies = Company.objects.all()
@@ -486,7 +778,7 @@ def list_feed(request, company_id):
     company = Company.objects.get(company_id=company_id)
 
     # Recupera la lista de feeds relacionados a la compañía
-    feeds = Feed.objects.filter(company_id=company)
+    feeds = Feed.objects.filter(company_id=company).order_by('created_at')
 
     # Renderiza el template de lista de feeds relacionados a una compañía
     return render(request, "list/list_feed.html", {"company": company, "feeds": feeds})
@@ -502,89 +794,190 @@ def list_companies(request):
 
 
 #MÉTODOS PARA ELIMINAR
-def delete_agency(request, id, company_id):
+def delete_agency(request, id):
+
     # Obtiene la agencia con el ID proporcionado
-    agency = Agency.objects.get(id=id)
+    original_agency = Agency.objects.get(id=id)
+
+    # Obtiene el company_id asociado a la agencia
+    company_id = original_agency.feed_id.company_id.company_id
+
+    # Obtener el feed actual para la compañía dada
+    current_feed = Feed.objects.get(company_id=company_id, is_current=True)
+
+    duplicated_feed = duplicate_feed(current_feed.feed_id)
+
+    agency = Agency.objects.filter(agency_id=original_agency.agency_id).order_by('-id').first()
+
+    name = agency.name
 
     # Elimina la agencia de la base de datos
     agency.delete()
+
+    duplicated_feed.last_action = f"Se eliminó la agencia: {name}"
+    duplicated_feed.save()
 
     # Redirige a la lista de agencias después de eliminar
     return redirect(reverse("company_agency", args=[company_id]))
 
 def delete_stop(request, id, company_id):
+
+    # Obtener el feed actual para la compañía dada
+    current_feed = Feed.objects.get(company_id=company_id, is_current=True)
+
+    duplicated_feed = duplicate_feed(current_feed.feed_id)
+
     # Obtiene la parada con el ID proporcionado
-    stop = Stop.objects.get(id=id)
+    original_stop = Stop.objects.get(id=id)
+
+    stop = Stop.objects.filter(stop_id=original_stop.stop_id).order_by('-id').first()
+
+    name = stop.name
 
     # Elimina la parada de la base de datos
     stop.delete()
+
+    duplicated_feed.last_action = f"Se eliminó la parada: {name}"
+    duplicated_feed.save()
 
     # Redirige a la lista de paradas después de eliminar
     return redirect(reverse("company_stop", args=[company_id]))
  
 def delete_route(request, id, company_id):
+
+    # Obtener el feed actual para la compañía dada
+    current_feed = Feed.objects.get(company_id=company_id, is_current=True)
+
+    duplicated_feed = duplicate_feed(current_feed.feed_id)
+
     # Obtiene la ruta con el ID proporcionado
-    route = Route.objects.get(id=id)
+    original_route = Route.objects.get(id=id)
+
+    route = Route.objects.filter(route_id=original_route.route_id).order_by('-id').first()
+
+    name = route.short_name
 
     # Elimina la ruta de la base de datos
     route.delete()
+
+    duplicated_feed.last_action = f"Se eliminó la ruta: {name}"
+    duplicated_feed.save()
 
     # Redirige a la lista de rutas después de eliminar
     return redirect(reverse("company_route", args=[company_id]))
 
 def delete_zone(request, id, company_id):
+
+    # Obtener el feed actual para la compañía dada
+    current_feed = Feed.objects.get(company_id=company_id, is_current=True)
+
+    duplicated_feed = duplicate_feed(current_feed.feed_id)
+
     # Obtiene la zona con el ID proporcionado
-    zone = Zone.objects.get(id=id)
+    original_zone = Zone.objects.get(id=id)
+
+    zone = Zone.objects.filter(zone_id=original_zone.zone_id).order_by('-id').first()
+
+    name = zone.zone_id
 
     # Elimina la zona de la base de datos
     zone.delete()
+
+    duplicated_feed.last_action = f"Se eliminó la zona: {name}"
+    duplicated_feed.save()
 
     # Redirige a la lista de zonas después de eliminar
     return redirect(reverse("company_zone", args=[company_id]))
 
 def delete_calendar(request, id, company_id):
+
+    # Obtener el feed actual para la compañía dada
+    current_feed = Feed.objects.get(company_id=company_id, is_current=True)
+
+    duplicated_feed = duplicate_feed(current_feed.feed_id)
+
     # Obtiene el calendario con el ID proporcionado
-    calendar = Calendar.objects.get(id=id)
+    original_calendar = Calendar.objects.get(id=id)
+
+    calendar = Calendar.objects.filter(service_id=original_calendar.service_id).order_by('-id').first()
+
+    name = calendar.service_id
 
     # Elimina el calendario de la base de datos
     calendar.delete()
+
+    duplicated_feed.last_action = f"Se eliminó el calendario: {name}"
+    duplicated_feed.save()
 
     # Redirige a la lista de calendarios después de eliminar
     return redirect(reverse("company_calendar", args=[company_id]))
 
 def delete_calendar_dates(request, id, company_id, calendar_id):
+
+    # Obtener el feed actual para la compañía dada
+    current_feed = Feed.objects.get(company_id=company_id, is_current=True)
+
+    duplicated_feed = duplicate_feed(current_feed.feed_id)
+
     # Obtiene la fecha de calendario con el ID del servicio proporcionado
-    calendar_date = CalendarDate.objects.get(id=id)
+    original_calendar_date = CalendarDate.objects.get(id=id)
+
+    calendar_date = CalendarDate.objects.filter(holiday_name=original_calendar_date.holiday_name).order_by('-id').first()
+
+    name = calendar_date.holiday_name
+
+    duplicated_feed.last_action = f"Se eliminó la fecha de calendario: {name}"
+    duplicated_feed.save()
 
     # Elimina la fecha de calendario de la base de datos
     calendar_date.delete()
 
+    calendar = Calendar.objects.get(id=calendar_id)
+    new_calendar = Calendar.objects.filter(service_id=calendar.service_id).order_by('-id').first()
+
     # Redirige a la lista de fechas de calendario después de eliminar
-    return redirect(reverse("company_calendar_date", args=[calendar_id, company_id]))
+    return redirect(reverse("company_calendar_date", args=[new_calendar.id, company_id]))
 
 def delete_fare_attribute(request, id ,company_id):
+
+    # Obtener el feed actual para la compañía dada
+    current_feed = Feed.objects.get(company_id=company_id, is_current=True)
+
+    duplicated_feed = duplicate_feed(current_feed.feed_id)
+
     # Obtiene la tarifa con el ID proporcionado
-    fare_attribute = FareAttribute.objects.get(id=id)
+    original_fare_attribute = FareAttribute.objects.get(id=id)
+
+    fare_attribute = FareAttribute.objects.filter(fare_id=original_fare_attribute.fare_id).order_by('-id').first()
+
+    name = fare_attribute.fare_id
 
     # Elimina la tarifa de la base de datos
     fare_attribute.delete()
 
+    duplicated_feed.last_action = f"Se eliminó la tarifa: {name}"
+    duplicated_feed.save()
+
     # Redirige a la lista de tarifas después de eliminar
     return redirect(reverse("company_fare_attribute", args=[company_id]))
 
-def delete_feed_info(request, feed_info_id):
-    # Obtiene la instancia de FeedInfo con el ID proporcionado o devuelve un error 404 si no existe
-    feed_info = FeedInfo.objects.get(id=feed_info_id)
-
-    # Elimina la instancia de FeedInfo de la base de datos
-    feed_info.delete()
-
-    # Redirige a la lista de FeedInfo después de eliminar
-    return redirect("list_feed_info")
-
 def delete_fare_rule(request, id, company_id):
+
+    # Obtener el feed actual para la compañía dada
+    current_feed = Feed.objects.get(company_id=company_id, is_current=True)
+
+    duplicated_feed = duplicate_feed(current_feed.feed_id)
+
     # Obtiene la instancia de FareRule con el ID proporcionado o devuelve un error 404 si no existe
-    fare_rule = FareRule.objects.get(id=id)
+    original_fare_rule = FareRule.objects.get(id=id)
+
+    fare_rule = FareRule.objects.filter(
+        origin__zone_id=original_fare_rule.origin.zone_id,
+        destination__zone_id=original_fare_rule.destination.zone_id
+    ).order_by('-id').first()
+
+    duplicated_feed.last_action = f"Se eliminó una regla de tarifa"
+    duplicated_feed.save()
 
     # Elimina la instancia de FareRule de la base de datos
     fare_rule.delete()
@@ -606,13 +999,22 @@ def delete_feed(request, id, company_id):
     # Recupera la compañía específica
     company = Company.objects.get(company_id=company_id)
 
+    # Recupera el feed específico
     feed = Feed.objects.get(feed_id=id)
 
-    # Elimina la instancia de Feed de la base de datos
-    feed.delete()
+    # Verifica cuántos feeds quedan para esta compañía
+    remaining_feeds_count = Feed.objects.filter(company_id=company_id).count()
+
+    # Si solo queda un feed, no permitir eliminarlo y mostrar un mensaje
+    if remaining_feeds_count == 1:
+        messages.error(request, 'No se puede eliminar el último feed.')
+    else:
+        # Elimina la instancia de Feed de la base de datos
+        feed.delete()
+        messages.success(request, 'Feed eliminado correctamente.')
 
     # Recupera la lista de feeds relacionados a la compañía
-    feeds = Feed.objects.filter(company_id=company)
+    feeds = Feed.objects.filter(company_id=company_id)
 
     # Renderiza el template de lista de feeds relacionados a una compañía
     return render(request, "list/list_feed.html", {"company": company, "feeds": feeds})
@@ -621,8 +1023,19 @@ def delete_feed(request, id, company_id):
 
 # MÉTODOS PARA EDITAR
 def edit_agency(request, id, company_id):
+
+    # Obtener el feed actual para la compañía dada
+    current_feed = Feed.objects.get(company_id=company_id, is_current=True)
+
     # Obtiene la agencia con el ID proporcionado
-    agency = Agency.objects.get(id=id)
+    original_agency = Agency.objects.get(id=id)
+
+    if request.method == "GET":
+        duplicated_feed = duplicate_feed(current_feed.feed_id)
+        duplicated_feed.last_action = f"Se editó la agencia {original_agency.name}"
+        duplicated_feed.save()
+
+    agency = Agency.objects.filter(agency_id=original_agency.agency_id).order_by('-id').first()
 
     if request.method == "POST":
         # Actualiza la información de la agencia con los datos proporcionados en el formulario
@@ -636,6 +1049,8 @@ def edit_agency(request, id, company_id):
         agency.email = request.POST["agency_email"]
         agency.save()
 
+
+
         # Redirige a la lista de agencias después de editar
         return redirect(reverse("company_agency", args=[company_id]))
     else:
@@ -644,8 +1059,19 @@ def edit_agency(request, id, company_id):
         return render(request, "edit/edit_agency.html", context)
 
 def edit_stop(request, id, company_id):
+
+    # Obtener el feed actual para la compañía dada
+    current_feed = Feed.objects.get(company_id=company_id, is_current=True)
+
     # Obtiene la parada con el ID proporcionado
-    stop = Stop.objects.get(id=id)
+    original_stop = Stop.objects.get(id=id)
+
+    if request.method == "GET":
+        duplicated_feed = duplicate_feed(current_feed.feed_id)
+        duplicated_feed.last_action = f"Se editó la parada {original_stop.name}"
+        duplicated_feed.save()
+
+    stop = Stop.objects.filter(stop_id=original_stop.stop_id).order_by('-id').first()
 
     if request.method == "POST":
         # Actualiza la información de la parada con los datos proporcionados en el formulario
@@ -653,13 +1079,20 @@ def edit_stop(request, id, company_id):
         stop.desc = request.POST["stop_desc"]
         stop.lat = float(request.POST["stop_lat"].replace(',', '.'))
         stop.lon = float(request.POST["stop_lon"].replace(',', '.'))
-        stop.zone_id = request.POST["stop_zone"]  
+
+        # Verifica si se seleccionó una zona
+        zone_id = request.POST.get("stop_zone")
+        if zone_id:
+            stop.zone = Zone.objects.get(id=zone_id)
+        else:
+            stop.zone = None
+
         stop.url = request.POST["stop_url"]
         stop.location_type = request.POST["stop_location_type"]
         stop.parent_station = request.POST["stop_parent_station"]
         stop.wheelchair_boarding = request.POST["stop_wheelchair_boarding"]
 
-        # En caso de tener la latitud y la longitud se van a utilizar para crear lo localización que es de tipo Point
+        # En caso de tener la latitud y la longitud se van a utilizar para crear la localización que es de tipo Point
         if "stop_lat" in request.POST and "stop_lon" in request.POST:
             stop.loc = Point(float(request.POST["stop_lon"].replace(',', '.')), float(request.POST["stop_lat"].replace(',', '.')))
 
@@ -669,13 +1102,25 @@ def edit_stop(request, id, company_id):
         return redirect(reverse("company_stop", args=[company_id]))
     else:
         # Muestra el formulario de edición con la información actual de la parada y las zonas disponibles
-        zones = Zone.objects.all()
+        duplicated_feed = Feed.objects.get(company_id=company_id, is_current=True)
+        zones = Zone.objects.filter(feed_id=duplicated_feed.feed_id)
         context = {"stop": stop, "zones": zones}
         return render(request, "edit/edit_stop.html", context)
 
 def edit_route(request, id, company_id):
+
+    # Obtener el feed actual para la compañía dada
+    current_feed = Feed.objects.get(company_id=company_id, is_current=True)
+
+    original_route = Route.objects.get(id=id)
+
+    if request.method == "GET":
+        duplicated_feed = duplicate_feed(current_feed.feed_id)
+        duplicated_feed.last_action = f"Se editó la ruta {original_route.short_name}"
+        duplicated_feed.save()
+
     # Obtiene la ruta con el ID proporcionado
-    route = Route.objects.get(id=id)
+    route = Route.objects.filter(route_id=original_route.route_id).order_by('-id').first()
     agencies = Agency.objects.all()
     route_type_choices = Route.ROUTE_TYPE_CHOICES 
 
@@ -691,7 +1136,7 @@ def edit_route(request, id, company_id):
         route.text_color = request.POST["route_text_color"][1:7]
 
         agency_id = request.POST["route_agency"]
-        agency = Agency.objects.get(agency_id=agency_id)
+        agency = Agency.objects.get(id=agency_id)
         route.agency = agency
 
         route.save()
@@ -699,13 +1144,26 @@ def edit_route(request, id, company_id):
         # Redirige a la lista de rutas después de editar
         return redirect(reverse("company_route", args=[company_id]))
     else:
+        duplicated_feed = Feed.objects.get(company_id=company_id, is_current=True)
+        agencies = Agency.objects.filter(feed_id=duplicated_feed.feed_id)
         # Muestra el formulario de edición con la información actual de la ruta y las agencias disponibles
         context = {"route": route, "agencies": agencies, "route_type_choices": route_type_choices}
         return render(request, "edit/edit_route.html", context)
   
 def edit_zone(request, id, company_id):
+
+    # Obtener el feed actual para la compañía dada
+    current_feed = Feed.objects.get(company_id=company_id, is_current=True)
+
     # Obtiene la zona con el ID proporcionado
-    zone = Zone.objects.get(id=id)
+    original_zone = Zone.objects.get(id=id)
+
+    if request.method == "GET":
+        duplicated_feed = duplicate_feed(current_feed.feed_id)
+        duplicated_feed.last_action = f"Se editó la zona {original_zone.zone_id}"
+        duplicated_feed.save()
+
+    zone = Zone.objects.filter(zone_id=original_zone.zone_id).order_by('-id').first()
 
     if request.method == "POST":
         # Obtiene el nuevo ID de zona proporcionado en el formulario
@@ -739,10 +1197,20 @@ def edit_zone(request, id, company_id):
         }
         return render(request, "edit/edit_zone.html", context)
 
-
 def edit_calendar(request, id, company_id):
+
+    # Obtener el feed actual para la compañía dada
+    current_feed = Feed.objects.get(company_id=company_id, is_current=True)
+
     # Obtiene el calendario con el ID proporcionado
-    calendar = Calendar.objects.get(id=id)
+    original_calendar = Calendar.objects.get(id=id)
+
+    if request.method == "GET":
+        duplicated_feed = duplicate_feed(current_feed.feed_id)
+        duplicated_feed.last_action = f"Se editó el calendario {original_calendar.service_id}"
+        duplicated_feed.save()
+
+    calendar = Calendar.objects.filter(service_id=original_calendar.service_id).order_by('-id').first()
 
     # Obtiene la lista de CalendarDate asociados al calendario
     calendar_dates = CalendarDate.objects.filter(service=calendar)
@@ -778,8 +1246,19 @@ def edit_calendar(request, id, company_id):
         return render(request, "edit/edit_calendar.html", context)
 
 def edit_calendar_dates(request, id, company_id, calendar_id):
+
+    # Obtener el feed actual para la compañía dada
+    current_feed = Feed.objects.get(company_id=company_id, is_current=True)
+
     # Obtiene la fecha del calendario con el ID proporcionado
-    calendar_dates = CalendarDate.objects.get(id=id)
+    original_calendar_dates = CalendarDate.objects.get(id=id)
+
+    if request.method == "GET":
+        duplicated_feed = duplicate_feed(current_feed.feed_id)
+        duplicated_feed.last_action = f"Se editó la fecha de calendario {original_calendar_dates.holiday_name}"
+        duplicated_feed.save()
+
+    calendar_dates = CalendarDate.objects.filter(holiday_name=original_calendar_dates.holiday_name).order_by('-id').first()
 
     if request.method == "POST":
         # Actualiza la información de la fecha del calendario con los datos proporcionados en el formulario
@@ -787,9 +1266,12 @@ def edit_calendar_dates(request, id, company_id, calendar_id):
         calendar_dates.exception_type = request.POST["exception_type"]
         calendar_dates.holiday_name = request.POST["holiday_name"]
         calendar_dates.save()
+
+        calendar = Calendar.objects.get(id=calendar_id)
+        new_calendar = Calendar.objects.filter(service_id=calendar.service_id).order_by('-id').first()
     
         # Redirige a la lista de fechas de calendario después de editar
-        return redirect(reverse("company_calendar_date", args=[calendar_id, company_id]))
+        return redirect(reverse("company_calendar_date", args=[new_calendar.id, company_id]))
     else:
         # Muestra el formulario de edición con la información actual de la fecha del calendario
         context = {
@@ -798,8 +1280,20 @@ def edit_calendar_dates(request, id, company_id, calendar_id):
         return render(request, "edit/edit_calendar_dates.html", context)
 
 def edit_fare_attribute(request, id, company_id):
+
+    # Obtener el feed actual para la compañía dada
+    current_feed = Feed.objects.get(company_id=company_id, is_current=True)
+
     # Obtiene la clase de tarifa con el ID proporcionado
-    fare_attribute = FareAttribute.objects.get(id=id)
+    original_fare_attribute = FareAttribute.objects.get(id=id)
+
+    if request.method == "GET":
+        duplicated_feed = duplicate_feed(current_feed.feed_id)
+        duplicated_feed.last_action = f"Se editó la tarifa {original_fare_attribute.fare_id}"
+        duplicated_feed.save()
+
+    fare_attribute = FareAttribute.objects.filter(fare_id=original_fare_attribute.fare_id).order_by('-id').first()
+
     agencies = Agency.objects.all()
 
     if request.method == "POST":
@@ -820,13 +1314,25 @@ def edit_fare_attribute(request, id, company_id):
         # Redirige a la lista de clases de tarifas después de editar
         return redirect(reverse("company_fare_attribute", args=[company_id]))
     else:
+        duplicated_feed = Feed.objects.get(company_id=company_id, is_current=True)
+        agencies = Agency.objects.filter(feed_id=duplicated_feed.feed_id)
         # Muestra el formulario de edición con la información actual de la clase de tarifa y las agencias disponibles
         context = {"fare_attribute": fare_attribute, "agencies": agencies}
         return render(request, "edit/edit_fare_attribute.html", context)
 
 def edit_feed_info(request, id, company_id):
-    # Obtiene la instancia de FeedInfo con el ID proporcionado o devuelve un error 404 si no existe
-    feed_info = FeedInfo.objects.get(id=id)
+
+    # Obtener el feed actual para la compañía dada
+    current_feed = Feed.objects.get(company_id=company_id, is_current=True)
+
+    if request.method == "GET":
+        duplicated_feed = duplicate_feed(current_feed.feed_id)
+        duplicated_feed.last_action = f"Se editó feed info"
+        duplicated_feed.save()
+
+    # Obtiene la instancia de FeedInfo con el ID proporcionado 
+    original_feed_info = FeedInfo.objects.get(id=id)
+    feed_info = FeedInfo.objects.filter(start_date=original_feed_info.start_date).order_by('-id').first()
 
     if request.method == "POST":
         # Actualiza la información de FeedInfo con los datos proporcionados en el formulario
@@ -847,8 +1353,23 @@ def edit_feed_info(request, id, company_id):
         return render(request, "edit/edit_feed_info.html", context)
 
 def edit_fare_rule(request, id, company_id):
+
+    # Obtener el feed actual para la compañía dada
+    current_feed = Feed.objects.get(company_id=company_id, is_current=True)
+
     # Obtiene la regla de tarifa con el ID proporcionado
-    fare_rule = FareRule.objects.get(id=id)
+    original_fare_rule = FareRule.objects.get(id=id)
+
+    if request.method == "GET":
+        duplicated_feed = duplicate_feed(current_feed.feed_id)
+        duplicated_feed.last_action = f"Se editó una regla de tarifa"
+        duplicated_feed.save()
+
+    fare_rule = FareRule.objects.filter(
+        origin__zone_id=original_fare_rule.origin.zone_id,
+        destination__zone_id=original_fare_rule.destination.zone_id
+    ).order_by('-id').first()
+
 
     if request.method == "POST":
         # Actualiza la información de la regla de tarifa con los datos proporcionados en el formulario
@@ -862,17 +1383,28 @@ def edit_fare_rule(request, id, company_id):
         return redirect(reverse("company_fare_rule", args=[company_id]))
     else:
         # Muestra el formulario de edición con la información actual de la regla de tarifa
+        duplicated_feed = Feed.objects.get(company_id=company_id, is_current=True)
+        fares = FareAttribute.objects.filter(feed_id=duplicated_feed.feed_id)
+        routes = Route.objects.filter(feed_id=duplicated_feed.feed_id)
+        zones = Zone.objects.filter(feed_id__company_id=company_id, feed_id__is_current=True)
         context = {
             "fare_rule": fare_rule,
-            "zones": Zone.objects.all(),  # Puedes necesitar ajustar esto según tu implementación
-            "fares": FareAttribute.objects.all(),
-            "routes": Route.objects.all(),
+            "fares": fares,
+            "routes": routes,
+            "zones": zones,
         }
         return render(request, "edit/edit_fare_rule.html", context)
 
 def edit_company(request, company_id):
     # Obtiene la compañía con el ID proporcionado
     company = Company.objects.get(company_id=company_id)
+
+    # Obtener el feed actual para la compañía dada
+    current_feed = Feed.objects.get(company_id=company_id, is_current=True)
+
+    duplicated_feed = duplicate_feed(current_feed.feed_id)
+    duplicated_feed.last_action = f"Se editó la compañía"
+    duplicated_feed.save()
 
     if request.method == "POST":
         # Actualiza la información de la compañía con los datos proporcionados en el formulario
@@ -1001,13 +1533,12 @@ def company_feed_info(request, company_id):
     if not feed_info:
         new_feed_info = FeedInfo(
             feed_id=current_feed,
-            id=str(current_feed.created_at),
             start_date=current_feed.created_at.date(),
             end_date=None,  # Replace with your default value
             publisher_name="Default Publisher",  # Replace with your default value
             publisher_url="http://default-publisher-url.com",  # Replace with your default value
             lang="en",  # Replace with your default value
-            version="1.0",  # Replace with your default value
+            version="1",  # Replace with your default value
             contact_email="default@example.com"  # Replace with your default value
         )
         new_feed_info.save()
@@ -1018,7 +1549,8 @@ def company_feed_info(request, company_id):
 
 
 
-
+# MÉTODOS PARA ASIGNAR O ELIMINAR LAS RUTAS DE UNA AGENCIA 
+# QUE VA A SER ELIMINADA
 def view_agency_routes(request, id):
     # Obtén la agencia con el ID proporcionado
     agency = Agency.objects.get(id=id)
@@ -1038,11 +1570,11 @@ def view_agency_routes(request, id):
         "all_agencies": all_agencies,
         "routes": routes,  # Agrega las rutas al contexto
     }
-    return render(request, "agency_delete/view_agency_routes.html", context)
+    return render(request, "assign_before_delete/view_agency_routes.html", context)
 
-def delete_all_routes(request, agency_id):
+def delete_all_routes(request, id):
         # Obtiene la agencia con el ID proporcionado
-        agency = Agency.objects.get(agency_id=agency_id)
+        agency = Agency.objects.get(id=id)
 
         # Obtiene todas las rutas asociadas a la agencia
         routes_to_delete = Route.objects.filter(agency=agency)
@@ -1052,24 +1584,144 @@ def delete_all_routes(request, agency_id):
             route.delete()
         
         # Redirige a la lista de rutas de la agencia correspondiente
-        return redirect("view_agency_routes", agency_id=agency_id)
+        return redirect("view_agency_routes", id=id)
 
-def update_all_routes_agency(request, agency_id):
+def update_all_routes_agency(request, id):
     # Obtiene la nueva agencia
 
     if request.method == 'POST':
             
         new_agency_id = request.POST["new_agency_id"]
-        new_agency = Agency.objects.get(agency_id=new_agency_id)
+        new_agency = Agency.objects.get(id=new_agency_id)
 
         # Actualiza la agencia de todas las rutas asociadas
-        routes_to_update = Route.objects.filter(agency=agency_id)
+        routes_to_update = Route.objects.filter(agency=id)
         routes_to_update.update(agency=new_agency)
 
         # Redirige a la página "view_agency_routes" después de la actualización
-        return redirect("view_agency_routes", agency_id=agency_id)
+        return redirect("view_agency_routes", id=id)
     else:
-        return redirect("view_agency_routes", agency_id=agency_id)
+        return redirect("view_agency_routes", id=id)
+    
+def update_route(request, id, route_id):
+    if request.method == 'POST':
+        new_agency_id = request.POST.get("new_agency_id")
+
+        try:
+            new_agency = Agency.objects.get(id=new_agency_id)
+            route_to_update = Route.objects.get(id=route_id)
+
+            # Actualiza la agencia de la ruta específica
+            route_to_update.agency = new_agency
+            route_to_update.save()
+
+            # Redirige a la página "view_agency_routes" después de la actualización
+            return redirect("view_agency_routes", id=id)
+        except:
+            # Redirige a la página "view_agency_routes" si ocurre algún error
+            return redirect("view_agency_routes", id=id)
+
+    else:
+        # Redirige a la página "view_agency_routes" si la solicitud no es POST
+        return redirect("view_agency_routes", id=id)
+
+def delete_agency_route(request, id, route_id):
+    # Obtiene la ruta con el ID proporcionado
+    route = Route.objects.get(id=route_id)
+
+    # Elimina la ruta de la base de datos
+    route.delete()
+
+    # Redirige a la lista de rutas después de eliminar
+    return redirect("view_agency_routes", id=id)
+
+
+# MÉTODOS PARA ASIGNAR O ELIMINAR LAS PARADAS DE UNA ZONA 
+# QUE VA A SER ELIMINADA
+def view_zone_stops(request, id):
+    # Obtén la zona con el ID proporcionado
+    zone = Zone.objects.get(id=id)
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+    # Obtén todas las zonas disponibles para asignar a las paradas
+    zones = Zone.objects.exclude(id=id)
+
+    # Obtén todas las paradas asociadas a la zona
+    stops = Stop.objects.filter(zone=zone)
+
+    # Renderiza la página con la información necesaria
+    context = {
+        "zone": zone,
+        "zones": zones,
+        "stops": stops,  
+    }
+    return render(request, "assign_before_delete/view_zone_stops.html", context)
+
+def delete_all_stops(request, id):
+        # Obtiene la zona con el ID proporcionado
+        zone = Zone.objects.get(id=id)
+
+        # Obtiene todas las paradas asociadas a la zona
+        stops_to_delete = Stop.objects.filter(zone=zone)
+
+        # Elimina cada ruta de la base de datos
+        for stop in stops_to_delete:
+            stop.delete()
+        
+        # Redirige a la lista de rutas de la agencia correspondiente
+        return redirect("view_zone_stops", id=id)
+
+def update_all_stops_zone(request, id):
+    if request.method == 'POST':
+
+        new_zone_id = request.POST["new_zone_id"]
+        new_zone = Zone.objects.get(id=new_zone_id)
+
+        # Actualiza la agencia de todas las rutas asociadas
+        stops_to_update = Stop.objects.filter(zone=id)
+        stops_to_update.update(zone=new_zone)
+
+        # Redirige a la página "view_agency_routes" después de la actualización
+        return redirect("view_zone_stops", id=id)
+    else:
+        return redirect("view_zone_stops", id=id)
+  
+def update_stop(request, id, stop_id):
+    if request.method == 'POST':
+        new_zone_id = request.POST.get("new_zone_id")
+
+        try:
+            new_zone = Zone.objects.get(id=new_zone_id)
+            stop_to_update = Stop.objects.get(id=stop_id)
+
+            # Actualiza la agencia de la ruta específica
+            stop_to_update.zone = new_zone
+            stop_to_update.save()
+
+            # Redirige a la página "view_zone_stops" después de la actualización
+            return redirect("view_zone_stops", id=id)
+        except:
+            # Redirige a la página "view_zone_stops" si ocurre algún error
+            return redirect("view_zone_stops", id=id)
+
+    else:
+        # Redirige a la página "view_zone_stops" si la solicitud no es POST
+        return redirect("view_zone_stops", id=id)
+
+def delete_zone_stop(request, id, stop_id):
+    # Obtiene la parada con el ID proporcionado
+    stop = Stop.objects.get(id=stop_id)
+
+    # Elimina la parada de la base de datos
+    stop.delete()
+
+    # Redirige a la lista de rutas después de eliminar
+    return redirect("view_zone_stops", id=id)
+
+
+
 
 def cargar_contenido(request):
     enlace = request.GET.get('enlace', '')
@@ -1081,7 +1733,6 @@ def cargar_contenido(request):
     contenido = f'Contenido para el enlace: {enlace}'
 
     return JsonResponse({'contenido': contenido})
-
 
 def select_feed(request, feed_id, company_id):
     # Obtener el feed seleccionado

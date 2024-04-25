@@ -11,7 +11,7 @@ class Company(models.Model):
     TODO: add PhoneNumberField
     """
 
-    company_id = models.CharField(max_length=255, blank=True, primary_key=True)
+    company_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=127)
     address = models.CharField(max_length=1024)
     phone = models.CharField(max_length=255)
@@ -28,14 +28,15 @@ class Feed(models.Model):
     TODO: a function to check if there are changes in the feed.
     TODO: a function to create the feed_id from the date of creation.
     TODO: evaluate if feed_info is what we want here (creo que no)
-    """
+    """ 
 
     feed_id = models.CharField(max_length=255, blank=True, primary_key=True)
-    company_id = models.ForeignKey("Company", null=True, on_delete=models.SET_NULL)
-    zip_file = models.FileField(upload_to="feeds/")
+    company_id = models.ForeignKey("Company", null=True, on_delete=models.CASCADE)
+    zip_file = models.FileField(upload_to="gtfs/feeds/")
     created_at = models.DateTimeField(auto_now_add=True)
     is_current = models.BooleanField(default=True)
     in_edition = models.BooleanField(default=False)
+    last_action = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         """Returns a name for the feed with a version number. The
@@ -90,7 +91,7 @@ class Stop(models.Model):
     Maps to stops.txt in the GTFS feed.
     """
     feed_id = models.ForeignKey("Feed", on_delete=models.CASCADE)
-    id = models.CharField(max_length=64, primary_key=True)
+    id = models.AutoField(primary_key=True)
 
     stop_id = models.CharField(
         max_length=255,
@@ -159,7 +160,7 @@ class Route(models.Model):
     """
 
     feed_id = models.ForeignKey("Feed", on_delete=models.CASCADE)
-    id = models.CharField(max_length=64, primary_key=True)
+    id = models.AutoField(primary_key=True)
 
     ROUTE_TYPE_CHOICES = (
         (0, "Tranvía o tren ligero"),
@@ -220,7 +221,7 @@ class Trip(models.Model):
     """
 
     feed_id = models.ForeignKey("Feed", on_delete=models.CASCADE)
-    id = models.CharField(max_length=64, primary_key=True)
+    id = models.AutoField(primary_key=True)
 
     route = models.ForeignKey("Route", on_delete=models.CASCADE)
     service = models.ForeignKey(
@@ -310,7 +311,7 @@ class StopTime(models.Model):
     """
 
     feed_id = models.ForeignKey("Feed", on_delete=models.CASCADE)
-    id = models.CharField(max_length=64, primary_key=True)
+    id = models.AutoField(primary_key=True)
 
     trip = models.ForeignKey("Trip", on_delete=models.CASCADE)
     stop = models.ForeignKey("Stop", on_delete=models.CASCADE)
@@ -383,7 +384,7 @@ class Calendar(models.Model):
     """
 
     feed_id = models.ForeignKey("Feed", on_delete=models.CASCADE)
-    id = models.CharField(max_length=64, primary_key=True)
+    id = models.AutoField(primary_key=True)
 
     service_id = models.CharField(
         max_length=255,
@@ -511,7 +512,7 @@ class CalendarDate(models.Model):
     """
 
     feed_id = models.ForeignKey("Feed", on_delete=models.CASCADE)
-    id = models.CharField(max_length=64, primary_key=True)
+    id = models.AutoField(primary_key=True)
 
     service = models.ForeignKey("Calendar", on_delete=models.CASCADE,)
     date = models.DateField( 
@@ -543,7 +544,7 @@ class FareAttribute(models.Model):
     """A fare attribute class"""
 
     feed_id = models.ForeignKey("Feed", on_delete=models.CASCADE)
-    id = models.CharField(max_length=64, primary_key=True)
+    id = models.AutoField(primary_key=True)
 
     fare_id = models.CharField(
         max_length=255,
@@ -652,7 +653,7 @@ class GeoShape(models.Model):
     Implements shapes.txt."""
 
     feed_id = models.ForeignKey("Feed", on_delete=models.CASCADE)
-    id = models.CharField(max_length=64, primary_key=True)
+    id = models.AutoField(primary_key=True)
 
     shape_id = models.CharField(
         max_length=255,
@@ -671,7 +672,7 @@ class Shape(models.Model):
     Implements shapes.txt."""
 
     feed_id = models.ForeignKey("Feed", on_delete=models.CASCADE)
-    id = models.CharField(max_length=64, primary_key=True)
+    id = models.AutoField(primary_key=True)
 
     shape_id = models.CharField(
         max_length=255,
@@ -710,7 +711,7 @@ class FeedInfo(models.Model):
     """Información sobre los que hacen el GTFS"""
 
     feed_id = models.ForeignKey("Feed", on_delete=models.CASCADE)
-    id = models.CharField(max_length=64, primary_key=True)
+    id = models.AutoField(primary_key=True)
 
     publisher_name = models.CharField(
         max_length=128, help_text="Quiénes hicieron el GTFS."
