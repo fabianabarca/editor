@@ -1,4 +1,4 @@
-from gtfs.models import Provider, Feed, Agency
+from gtfs.models import Provider, Feed, Agency, Stop
 from rest_framework import permissions, viewsets
 
 from .serializers import *
@@ -29,3 +29,12 @@ class AgencyViewSet(viewsets.ModelViewSet):
 
     queryset = Agency.objects.all()
     serializer_class = AgencySerializer
+
+
+class StopViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows on board equipment to be viewed or edited.
+    """
+
+    queryset = Stop.objects.all()
+    serializer_class = StopSerializer
