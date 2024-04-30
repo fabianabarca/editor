@@ -85,14 +85,14 @@ WSGI_APPLICATION = "editor.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
-        "NAME": config('DB_NAME'),
-        "USER": config('DB_USER'),
-        "PASSWORD": config('DB_PASSWORD'),
+        "NAME": config("DB_NAME"),
+        "USER": config("DB_USER"),
     },
 }
 
-GDAL_LIBRARY_PATH = config('GDAL_LIBRARY_PATH')
-GEOS_LIBRARY_PATH = config('GEOS_LIBRARY_PATH')
+if not (platform.platform() == "Linux" or platform.machine() == "x86_64"):
+    GDAL_LIBRARY_PATH = config("GDAL_LIBRARY_PATH")
+    GEOS_LIBRARY_PATH = config("GEOS_LIBRARY_PATH")
 
 
 # Password validation
@@ -130,6 +130,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = "static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
