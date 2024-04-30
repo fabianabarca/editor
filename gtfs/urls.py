@@ -1,9 +1,7 @@
 from django.urls import path
 from . import views
-from django.contrib import admin
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
     path('', views.list_companies, name='compañías'),
     path('listo/', views.edited, name='edited'),
 

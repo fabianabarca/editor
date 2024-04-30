@@ -37,6 +37,9 @@ INSTALLED_APPS = [
     "gtfs.apps.GtfsConfig",
     "accounts.apps.AccountsConfig",
     "website.apps.WebsiteConfig",
+    "api.apps.ApiConfig",
+    "rest_framework",
+    "drf_spectacular",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -55,7 +58,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "gtfs.urls"
+ROOT_URLCONF = "editor.urls"
 
 TEMPLATES = [
     {
