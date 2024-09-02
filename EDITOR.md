@@ -45,11 +45,11 @@ En total son **trece (13) tablas** de GTFS Schedule utilizadas en el editor, de 
 
 Además, hay varias tablas auxiliares:
 
-- :white_check_mark: **feeds**
-- :white_check_mark: **geoshapes**
-- :white_check_mark: **route_stops**
-- :white_check_mark: **trip_times**
-- :white_check_mark: **stop_times_estimations**
+- :white_check_mark: **feeds**: histórico de *feeds* GTFS Schedule creados en el editor, incluyendo los vencidos, el actual publicado y el que está en edición
+- :white_check_mark: **geoshapes**: trayectorias guardadas como geometrías en la base de datos geoespacial
+- :white_check_mark: **route_stops**: secuencia de paradas para cada combinación de ruta (`route_id`) y trayectoria (`shape_id`)
+- :white_check_mark: **route_durations**: aproximación de la duración de un viaje en un intervalo del día para cada combinación de ruta (`route_id`), trayectoria (`shape_id`) y calendario (`service_id`)
+- :white_check_mark: **trip_times**: tiempos de salida de cada viaje
 - :eight_spoked_asterisk: **stop_times_measurements**
 - :eight_spoked_asterisk: **estimation_models**
 
@@ -59,34 +59,33 @@ El editor edita en total **dieciocho (18)** tablas.
 
 ## Orden de edición
 
-Asumiendo una aplicación "de una página" (**SPA**, *Single-Page Application*), la creación de un suministro (*feed*) de GTFS sucede en **nueve pasos**:
+Asumiendo una aplicación "de una página" (**SPA**, *Single-Page Application*), la creación de un suministro (*feed*) de GTFS sucede en **ocho pasos**:
 
 1. :page_facing_up: **Agencias** :key:
    - agency.txt
 2. :page_facing_up: **Paradas** :busstop:
    - stops.txt
-3. :page_facing_up: **Rutas** :oncoming_bus:
-   - routes.txt
-4. :page_facing_up: **Recorridos** :bus:
-   - shapes.txt
-   - geoshapes
-   - route_stops
-   - stop_times_estimations
-5. :page_facing_up: **Calendario** :calendar:
+3. :page_facing_up: **Calendario** :calendar:
    - calendar.txt
    - calendar_dates.txt
-6. :page_facing_up: **Viajes** :clock130:
+4. :page_facing_up: **Rutas** :oncoming_bus:
+   - routes.txt
+   - shapes.txt (una ruta puede tener más de una trayectoria)
+   - geoshapes
+   - route_stops
+   - route_durations
+5. :page_facing_up: **Viajes** :clock130:
    - trips.txt
    - *frequencies.txt*
    - trip_times
    - stop_times.txt
-7. :page_facing_up: **Tarifas** :dollar:
+6. :page_facing_up: **Tarifas** :dollar:
    - fare_attributes.txt
    - fare_rules.txt
-8. :page_facing_up: **Información** :information_source:
+7. :page_facing_up: **Información** :information_source:
    - feed_info.txt
    - *attributions.txt*
-9. :page_facing_up: **Revisión y exportación** :ok:
+8. :page_facing_up: **Revisión y exportación** :ok:
    - feeds
 
 ### Esbozo de cada sitio de edición
