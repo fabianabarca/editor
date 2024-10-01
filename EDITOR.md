@@ -48,7 +48,7 @@ Además, hay varias tablas auxiliares:
 - :white_check_mark: **feeds**: histórico de *feeds* GTFS Schedule creados en el editor, incluyendo los vencidos, el actual publicado y el que está en edición
 - :white_check_mark: **geoshapes**: trayectorias guardadas como geometrías en la base de datos geoespacial
 - :white_check_mark: **route_stops**: secuencia de paradas para cada combinación de ruta (`route_id`) y trayectoria (`shape_id`)
-- :white_check_mark: **route_durations**: aproximación de la duración de un viaje en un intervalo del día para cada combinación de ruta (`route_id`), trayectoria (`shape_id`) y calendario (`service_id`)
+- :white_check_mark: **trip_durations**: aproximación de la duración de un viaje en un intervalo del día para cada combinación de ruta (`route_id`), trayectoria (`shape_id`) y calendario (`service_id`)
 - :white_check_mark: **trip_times**: tiempos de salida de cada viaje
 - :eight_spoked_asterisk: **stop_times_measurements**
 - :eight_spoked_asterisk: **estimation_models**
@@ -108,6 +108,13 @@ Información sobre las "agencias" que operan el servicio. En Costa Rica, podría
 ```bash
 GET /api/agency
 ```
+
+## Comentarios sobre la implementación
+
+Motivos para tener un servidor y base de datos separado del servidor en tiempo real Databús:
+
+- Posibilidad de interactuar con otras bases de datos (por ejemplo, para recopilar información oficial de paradas, rutas, etc.). Este también es un motivo para justificar la separación del _backend_ del _frontend_ en React JS y no utilizar soluciones alternativas como Django _full stack_ con HTMX.
+- Las demandas de desempeño de Databús y el editor son diferentes. Databús es más "sucio" porque está en tiempo real procesando una "alta" cantidad de datos, y sería imaginable un colapso más fácilmente. Mientras que el editor es más "limpio" y su uso más "pausado", gestionado por personas.
 
 ## Algunos modelos especiales
 
