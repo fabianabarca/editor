@@ -61,6 +61,8 @@ El editor edita en total **dieciocho (18)** tablas.
 
 Asumiendo una aplicación "de una página" (**SPA**, *Single-Page Application*), la creación de un suministro (*feed*) de GTFS sucede en **ocho pasos**:
 
+1. :page_facing_up: **Inicio** :house:
+   - Descripción general
 1. :page_facing_up: **Agencias** :key:
    - agency.txt
 2. :page_facing_up: **Paradas** :busstop:
